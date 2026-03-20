@@ -1,0 +1,10 @@
+# Development Dependencies
+
+# Include main requirements
+-r requirements.txt
+
+# Packaging
+pyinstaller>=6.0.0
+
+# macOS DMG creation (optional)
+# brew install create-dmg
