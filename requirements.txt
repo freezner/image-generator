@@ -1,0 +1,13 @@
+# Brand-Sync AI Image Generator Dependencies
+
+# Google GenAI API (new SDK)
+google-genai>=1.0.0
+
+# Image Processing
+Pillow>=10.0.0
+
+# Optional: Background Removal
+# rembg>=2.0.0
+
+# Optional: Image Upscaling
+# realesrgan>=0.3.0
