@@ -219,16 +219,18 @@ class ImageGenerator:
                 ))
             
             # 참조 이미지와 함께 프롬프트
-            full_prompt = f"""Based on the reference character image above, generate a new image:
+            full_prompt = f"""Based on the reference character images above, generate a new image:
 
 {prompt}
 
-CRITICAL RULES:
-- Maintain the exact same character design and style
-- Generate as a high-quality image
-- NEVER add any text, letters, numbers, words, or watermarks to the image UNLESS the user explicitly requests specific text in quotes
-- If text is requested, use ONLY the exact text provided in quotes - do not add or modify anything
-- Keep the image clean and text-free by default"""
+CRITICAL RULES - MUST FOLLOW STRICTLY:
+1. CHARACTER COLORS: STRICTLY preserve the EXACT original colors of the character from the reference images. Do NOT change any colors - skin tone, hair color, clothing colors, accessory colors must be IDENTICAL to the reference.
+2. CHARACTER DESIGN: Maintain the exact same character design, proportions, facial features, and style.
+3. NO COLOR MODIFICATION: Do NOT apply any color filters, color grading, or color changes to the character. The character must look exactly like the reference in terms of all colors.
+4. TEXT: NEVER add any text, letters, numbers, words, or watermarks UNLESS explicitly requested with exact text in quotes.
+5. QUALITY: Generate as a high-quality, clean image.
+
+IMPORTANT: The character's original colors are sacred - do not alter them under any circumstances."""
         else:
             full_prompt = f"""Generate an image: {prompt}
 

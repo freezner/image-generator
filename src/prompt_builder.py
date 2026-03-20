@@ -69,17 +69,39 @@ class PromptBuilder:
         
         return final_prompt
     
-    def build_simple(self, user_input: str) -> str:
+    def build_simple(self, user_input: str, has_character_reference: bool = False) -> str:
         """
         간단한 빌드 - 사용자 입력만으로 프롬프트 생성
         
         Args:
             user_input: 사용자가 입력한 텍스트 (향상된 상태)
+            has_character_reference: 캐릭터 참조 이미지가 있는지 여부
             
         Returns:
             완성된 프롬프트
         """
+        if has_character_reference:
+            return self.build_for_character(user_input)
         return self.build(user_input)
+    
+    def build_for_character(self, user_input: str) -> str:
+        """
+        캐릭터 참조 이미지가 있을 때 사용하는 빌드
+        브랜드 색상을 캐릭터에 적용하지 않음
+        
+        Args:
+            user_input: 사용자가 입력한 텍스트
+            
+        Returns:
+            캐릭터 색상 보존용 프롬프트
+        """
+        # 캐릭터 참조 시에는 색상 관련 지시 제외
+        style_keywords = ", ".join(self.config.brand.style_keywords) if self.config.brand.style_keywords else "3D rendering, cute"
+        
+        prefix = f"{style_keywords}, consistent character design from reference,"
+        suffix = ", soft studio lighting, minimal clean background, high quality, detailed"
+        
+        return f"{prefix} {user_input}{suffix}"
     
     def get_negative_prompt(self) -> str:
         """네거티브 프롬프트 반환"""

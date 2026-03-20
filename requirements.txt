@@ -6,6 +6,9 @@ google-genai>=1.0.0
 # Image Processing
 Pillow>=10.0.0
 
+# GUI (Flet - Tkinter 불필요)
+flet>=0.25.0
+
 # Optional: Background Removal
 # rembg>=2.0.0
 

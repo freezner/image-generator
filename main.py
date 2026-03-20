@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Brand-Sync AI Image Generator
+JB-Bank AI Image Generator
 브랜드 일관성 유지 AI 이미지 제너레이터
 
 사용법:
@@ -24,8 +24,8 @@ def print_banner():
     """배너 출력"""
     print("""
 ╔═══════════════════════════════════════════════════════╗
-║   🎨 Brand-Sync AI Image Generator                    ║
-║   브랜드 일관성 유지 AI 이미지 제너레이터              ║
+║   🎨 JB-Bank AI Image Generator                       ║
+║   전북은행 AI 이미지 제너레이터                              ║
 ╚═══════════════════════════════════════════════════════╝
 """)
 
@@ -71,8 +71,9 @@ def interactive_mode(config, enhancer, builder, generator):
             enhanced = enhancer.enhance(clean_prompt)
             print(f"   → {enhanced}")
             
-            # 최종 프롬프트 생성
-            final_prompt = builder.build_simple(enhanced)
+            # 최종 프롬프트 생성 (캐릭터 참조 시 색상 보존)
+            has_char_ref = bool(reference_images)
+            final_prompt = builder.build_simple(enhanced, has_character_reference=has_char_ref)
             negative = builder.get_negative_prompt()
             
             # 프롬프트 미리보기
@@ -121,8 +122,9 @@ def single_generate(config, enhancer, builder, generator, prompt: str):
     enhanced = enhancer.enhance(clean_prompt)
     print(f"   → {enhanced}")
     
-    # 최종 프롬프트 생성
-    final_prompt = builder.build_simple(enhanced)
+    # 최종 프롬프트 생성 (캐릭터 참조 시 색상 보존)
+    has_char_ref = bool(reference_images)
+    final_prompt = builder.build_simple(enhanced, has_character_reference=has_char_ref)
     negative = builder.get_negative_prompt()
     
     # 이미지 생성
@@ -170,8 +172,9 @@ def batch_generate(config, enhancer, builder, generator, batch_file: str):
         # 프롬프트 향상
         enhanced = enhancer.enhance(clean_prompt)
         
-        # 최종 프롬프트 생성
-        final_prompt = builder.build_simple(enhanced)
+        # 최종 프롬프트 생성 (캐릭터 참조 시 색상 보존)
+        has_char_ref = bool(reference_images)
+        final_prompt = builder.build_simple(enhanced, has_character_reference=has_char_ref)
         negative = builder.get_negative_prompt()
         
         # 이미지 생성
@@ -191,7 +194,7 @@ def batch_generate(config, enhancer, builder, generator, batch_file: str):
 def main():
     """메인 함수"""
     parser = argparse.ArgumentParser(
-        description='Brand-Sync AI Image Generator',
+        description='JB-Bank AI Image Generator',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 예시:

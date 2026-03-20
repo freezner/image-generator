@@ -1,9 +1,14 @@
 {
   "brand": {
-    "name": "MyBrand",
+    "name": "JBBank",
     "main_color": "#FF6B35",
     "sub_color": "#004E89",
-    "style_keywords": ["3D rendering", "cute", "soft lighting", "minimal shadow"]
+    "style_keywords": [
+      "3D rendering",
+      "cute",
+      "soft lighting",
+      "minimal shadow"
+    ]
   },
   "output": {
     "format": "png",
