@@ -30,10 +30,16 @@ def print_banner():
 """)
 
 
-def interactive_mode(config, enhancer, builder, generator, reference_images):
+def interactive_mode(config, enhancer, builder, generator):
     """대화형 모드"""
-    print("📝 생성할 이미지를 설명해주세요 (종료: q 또는 quit)")
-    print("   예시: '선물 상자를 든 모습', '계산기를 들고 설명하는 포즈'")
+    # 사용 가능한 캐릭터 표시
+    available_chars = generator.get_available_characters()
+    if available_chars:
+        print(f"🎭 사용 가능한 캐릭터: {', '.join(available_chars)}")
+        print("   💡 프롬프트에 캐릭터 이름을 넣으면 해당 캐릭터 이미지를 참조합니다")
+    
+    print("\n📝 생성할 이미지를 설명해주세요 (종료: q 또는 quit)")
+    print("   예시: 'JB가 선물 상자를 든 모습', 'JB가 점프하는 포즈'")
     print("-" * 50)
     
     while True:
@@ -47,9 +53,22 @@ def interactive_mode(config, enhancer, builder, generator, reference_images):
                 print("👋 종료합니다!")
                 break
             
+            # 캐릭터 감지 및 참조 이미지 로드
+            detected_char = generator.detect_character_from_prompt(user_input)
+            reference_images = generator.load_reference_images(detected_char)
+            
+            # 프롬프트에서 캐릭터명 제거 (이미지에 텍스트로 나오는 것 방지)
+            clean_prompt = user_input
+            if detected_char:
+                clean_prompt = generator.remove_character_name_from_prompt(user_input, detected_char)
+                print(f"   📝 정제된 프롬프트: {clean_prompt}")
+            
+            if not reference_images:
+                print("   ⚠️ 참조 이미지 없음 - 텍스트만으로 생성")
+            
             # 프롬프트 향상
             print("🔄 프롬프트 최적화 중...")
-            enhanced = enhancer.enhance(user_input)
+            enhanced = enhancer.enhance(clean_prompt)
             print(f"   → {enhanced}")
             
             # 최종 프롬프트 생성
@@ -80,13 +99,26 @@ def interactive_mode(config, enhancer, builder, generator, reference_images):
             print(f"❌ 오류 발생: {e}")
 
 
-def single_generate(config, enhancer, builder, generator, reference_images, prompt: str):
+def single_generate(config, enhancer, builder, generator, prompt: str):
     """단일 이미지 생성"""
     print(f"📝 입력: {prompt}")
     
+    # 캐릭터 감지 및 참조 이미지 로드
+    detected_char = generator.detect_character_from_prompt(prompt)
+    reference_images = generator.load_reference_images(detected_char)
+    
+    # 프롬프트에서 캐릭터명 제거
+    clean_prompt = prompt
+    if detected_char:
+        clean_prompt = generator.remove_character_name_from_prompt(prompt, detected_char)
+        print(f"   📝 정제된 프롬프트: {clean_prompt}")
+    
+    if not reference_images:
+        print("   ⚠️ 참조 이미지 없음")
+    
     # 프롬프트 향상
     print("🔄 프롬프트 최적화 중...")
-    enhanced = enhancer.enhance(prompt)
+    enhanced = enhancer.enhance(clean_prompt)
     print(f"   → {enhanced}")
     
     # 최종 프롬프트 생성
@@ -109,7 +141,7 @@ def single_generate(config, enhancer, builder, generator, reference_images, prom
         return False
 
 
-def batch_generate(config, enhancer, builder, generator, reference_images, batch_file: str):
+def batch_generate(config, enhancer, builder, generator, batch_file: str):
     """일괄 이미지 생성"""
     batch_path = Path(batch_file)
     if not batch_path.exists():
@@ -126,8 +158,17 @@ def batch_generate(config, enhancer, builder, generator, reference_images, batch
     for i, prompt in enumerate(prompts, 1):
         print(f"\n[{i}/{len(prompts)}] {prompt}")
         
+        # 캐릭터 감지 및 참조 이미지 로드
+        detected_char = generator.detect_character_from_prompt(prompt)
+        reference_images = generator.load_reference_images(detected_char)
+        
+        # 프롬프트에서 캐릭터명 제거
+        clean_prompt = prompt
+        if detected_char:
+            clean_prompt = generator.remove_character_name_from_prompt(prompt, detected_char)
+        
         # 프롬프트 향상
-        enhanced = enhancer.enhance(prompt)
+        enhanced = enhancer.enhance(clean_prompt)
         
         # 최종 프롬프트 생성
         final_prompt = builder.build_simple(enhanced)
@@ -196,13 +237,12 @@ def main():
     builder = create_builder(config)
     generator = create_generator(config, api_key)
     
-    # 참조 이미지 로드
-    print("\n📂 참조 이미지 로드...")
-    reference_images = generator.load_reference_images()
-    if not reference_images:
-        print("   ⚠️ 참조 이미지 없음 - 텍스트 프롬프트만으로 생성됩니다")
+    # 사용 가능한 캐릭터 확인
+    available_chars = generator.get_available_characters()
+    if available_chars:
+        print(f"\n🎭 등록된 캐릭터: {', '.join(available_chars)}")
     else:
-        print(f"   ✓ {len(reference_images)}개 이미지 로드됨")
+        print("\n⚠️ 등록된 캐릭터 없음 - assets/character/ 폴더에 이미지를 추가하세요")
     
     print("-" * 50)
     
@@ -220,11 +260,11 @@ def main():
     
     # 실행 모드 선택
     if args.batch:
-        batch_generate(config, enhancer, builder, generator, reference_images, args.batch)
+        batch_generate(config, enhancer, builder, generator, args.batch)
     elif args.prompt:
-        single_generate(config, enhancer, builder, generator, reference_images, args.prompt)
+        single_generate(config, enhancer, builder, generator, args.prompt)
     else:
-        interactive_mode(config, enhancer, builder, generator, reference_images)
+        interactive_mode(config, enhancer, builder, generator)
 
 
 if __name__ == '__main__':

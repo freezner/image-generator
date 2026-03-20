@@ -17,7 +17,10 @@ from .config_loader import Config
 
 
 class ImageGenerator:
-    """AI 이미지 생성기 (Imagen 3)"""
+    """AI 이미지 생성기"""
+    
+    # 지원 이미지 포맷
+    SUPPORTED_FORMATS = {'.png', '.jpg', '.jpeg', '.webp'}
     
     def __init__(self, config: Config, api_key: str):
         """
@@ -33,10 +36,93 @@ class ImageGenerator:
         
         # 출력 디렉토리 생성
         self.config.paths.output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 사용 가능한 캐릭터 목록 캐시
+        self._character_names = None
     
-    def load_reference_images(self) -> List[Image.Image]:
+    def get_available_characters(self) -> List[str]:
+        """
+        사용 가능한 캐릭터 이름(prefix) 목록 반환
+        
+        Returns:
+            캐릭터 이름 리스트 (예: ['JB', 'TOTO'])
+        """
+        if self._character_names is not None:
+            return self._character_names
+        
+        char_dir = self.config.paths.character_dir
+        if not char_dir.exists():
+            self._character_names = []
+            return []
+        
+        # 파일명에서 prefix 추출 (숫자 제거)
+        prefixes = set()
+        for f in char_dir.iterdir():
+            if f.suffix.lower() in self.SUPPORTED_FORMATS:
+                # 파일명에서 숫자 제거하여 캐릭터 이름 추출
+                name = f.stem
+                prefix = ''.join(c for c in name if not c.isdigit()).strip('_- ')
+                if prefix:
+                    prefixes.add(prefix.upper())
+        
+        self._character_names = sorted(prefixes)
+        return self._character_names
+    
+    def detect_character_from_prompt(self, prompt: str) -> Optional[str]:
+        """
+        프롬프트에서 캐릭터 이름 감지
+        
+        Args:
+            prompt: 사용자 입력 프롬프트
+            
+        Returns:
+            감지된 캐릭터 이름 또는 None
+        """
+        available = self.get_available_characters()
+        prompt_upper = prompt.upper()
+        
+        for char_name in available:
+            if char_name in prompt_upper:
+                return char_name
+        
+        return None
+    
+    def remove_character_name_from_prompt(self, prompt: str, character_name: str) -> str:
+        """
+        프롬프트에서 캐릭터 이름 제거
+        
+        Args:
+            prompt: 원본 프롬프트
+            character_name: 제거할 캐릭터 이름
+            
+        Returns:
+            캐릭터 이름이 제거된 프롬프트
+        """
+        import re
+        
+        # 대소문자 무시하고 캐릭터 이름 + 조사 패턴 제거
+        # 예: "JB가", "JB는", "JB를", "JB의", "JB ", "jb가" 등
+        patterns = [
+            rf'\b{character_name}[가는을를의이]?\s*',  # JB가, JB는 등
+            rf'\b{character_name.lower()}[가는을를의이]?\s*',  # jb가, jb는 등
+            rf'\b{character_name.upper()}[가는을를의이]?\s*',  # JB가, JB는 등
+        ]
+        
+        result = prompt
+        for pattern in patterns:
+            result = re.sub(pattern, '', result, flags=re.IGNORECASE)
+        
+        # 앞뒤 공백 정리
+        result = ' '.join(result.split())
+        
+        return result if result else prompt  # 결과가 비어있으면 원본 반환
+    
+    def load_reference_images(self, character_name: Optional[str] = None) -> List[Image.Image]:
         """
         참조 캐릭터 이미지 로드
+        
+        Args:
+            character_name: 특정 캐릭터 이름 (없으면 전체 로드)
         
         Returns:
             PIL Image 객체 리스트
@@ -48,14 +134,21 @@ class ImageGenerator:
             print(f"⚠️ 캐릭터 디렉토리가 없습니다: {char_dir}")
             return images
         
-        # 지원 포맷
-        supported_formats = {'.png', '.jpg', '.jpeg', '.webp'}
-        
-        # 이미지 파일 로드
+        # 이미지 파일 필터링
         image_files = sorted([
             f for f in char_dir.iterdir() 
-            if f.suffix.lower() in supported_formats
+            if f.suffix.lower() in self.SUPPORTED_FORMATS
         ])
+        
+        # 캐릭터 이름으로 필터링
+        if character_name:
+            char_upper = character_name.upper()
+            image_files = [
+                f for f in image_files 
+                if f.stem.upper().startswith(char_upper)
+            ]
+            if image_files:
+                print(f"🎭 캐릭터 '{character_name}' 감지됨!")
         
         # 최대 개수 제한
         max_images = self.config.api.max_reference_images
@@ -65,9 +158,9 @@ class ImageGenerator:
             try:
                 img = Image.open(img_path)
                 images.append(img)
-                print(f"✓ 참조 이미지 로드: {img_path.name}")
+                print(f"   ✓ 참조 이미지: {img_path.name}")
             except Exception as e:
-                print(f"⚠️ 이미지 로드 실패 ({img_path.name}): {e}")
+                print(f"   ⚠️ 이미지 로드 실패 ({img_path.name}): {e}")
         
         return images
     
@@ -130,9 +223,19 @@ class ImageGenerator:
 
 {prompt}
 
-IMPORTANT: Maintain the exact same character design and style. Generate as a high-quality image."""
+CRITICAL RULES:
+- Maintain the exact same character design and style
+- Generate as a high-quality image
+- NEVER add any text, letters, numbers, words, or watermarks to the image UNLESS the user explicitly requests specific text in quotes
+- If text is requested, use ONLY the exact text provided in quotes - do not add or modify anything
+- Keep the image clean and text-free by default"""
         else:
-            full_prompt = f"Generate an image: {prompt}"
+            full_prompt = f"""Generate an image: {prompt}
+
+CRITICAL RULES:
+- Generate as a high-quality image
+- NEVER add any text, letters, numbers, words, or watermarks UNLESS explicitly requested with exact text in quotes
+- Keep the image clean and text-free by default"""
         
         contents.append(full_prompt)
         
