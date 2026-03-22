@@ -216,10 +216,15 @@ class ImageGeneratorApp:
                 self._update_status("컴포넌트 초기화 중...", 0.1)
                 self._log("⚙️ 컴포넌트 초기화 중...")
                 
-                # 작업 디렉토리 설정
+                # 작업 디렉토리 설정 및 로깅
+                import os
+                cwd = os.getcwd()
+                self._log(f"   작업 디렉토리: {cwd}")
+                
                 if getattr(sys, 'frozen', False):
                     app_dir = Path(sys.executable).parent
                     os.chdir(app_dir)
+                    self._log(f"   앱 디렉토리: {app_dir}")
                 
                 # src 모듈 임포트
                 from src import load_config, create_enhancer, create_builder, create_generator
@@ -230,6 +235,7 @@ class ImageGeneratorApp:
                 
                 # API 키 확인
                 api_key = self.config.get_api_key()
+                self._log(f"   API 키: {'설정됨 (' + api_key[:8] + '...)' if api_key else '없음'}")
                 if not api_key:
                     self._log("⚠️ API 키가 설정되지 않았습니다.")
                     self._log("   설정 창을 열어 API 키를 입력하세요.")
@@ -503,12 +509,18 @@ class ImageGeneratorApp:
                 self._log("🎨 이미지 생성 중...")
                 
                 # 이미지 생성
-                image, filepath = self.generator.generate_and_save(
-                    prompt=final_prompt,
-                    reference_images=reference_images,
-                    negative_prompt=negative,
-                    name_hint=prompt[:30]
-                )
+                try:
+                    image, filepath = self.generator.generate_and_save(
+                        prompt=final_prompt,
+                        reference_images=reference_images,
+                        negative_prompt=negative,
+                        name_hint=prompt[:30]
+                    )
+                except Exception as gen_err:
+                    self._log(f"❌ 생성 오류: {type(gen_err).__name__}: {gen_err}")
+                    import traceback
+                    self._log(f"   {traceback.format_exc()[:500]}")
+                    raise gen_err
                 
                 self._update_status("완료!", 1.0)
                 
@@ -518,13 +530,15 @@ class ImageGeneratorApp:
                         lambda: self._show_success(f"이미지가 생성되었습니다!\n\n저장 위치: {filepath}")
                     )
                 else:
-                    self._log("❌ 이미지 생성 실패")
+                    self._log("❌ 이미지 생성 실패 (결과 없음)")
                     self.page.run_thread(
                         lambda: self._show_error("이미지 생성에 실패했습니다.\n로그를 확인하세요.")
                     )
                     
             except Exception as ex:
-                self._log(f"❌ 오류: {ex}")
+                import traceback
+                self._log(f"❌ 오류: {type(ex).__name__}: {ex}")
+                self._log(f"   상세: {traceback.format_exc()[:300]}")
                 self.page.run_thread(lambda: self._show_error(str(ex)))
             finally:
                 self.is_generating = False
