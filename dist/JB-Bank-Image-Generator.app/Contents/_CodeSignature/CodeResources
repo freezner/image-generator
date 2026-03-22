@@ -20,6 +20,50 @@
 		<data>
 		2+mWWVVFef86cI99ykEio8lhPRk=
 		</data>
+		<key>Resources/assets/icon.icns</key>
+		<data>
+		lzca0IcQjcR3/XUMzm0damIB+6g=
+		</data>
+		<key>Resources/assets/icon.ico</key>
+		<data>
+		EOU39HF30zFMtgiBQF2eR1fmSkk=
+		</data>
+		<key>Resources/assets/icon.png</key>
+		<data>
+		rWrmspD2EUDpcRorRnQ0vTJ6u/Q=
+		</data>
+		<key>Resources/assets/icon.svg</key>
+		<data>
+		QgtWPkIPzZvbl2RquLNjFUwqvyQ=
+		</data>
+		<key>Resources/assets/icon_1024.png</key>
+		<data>
+		O5dZtyas2yzUWtcNmZ23JecFcLk=
+		</data>
+		<key>Resources/assets/icon_128.png</key>
+		<data>
+		1YYeEwYfUX+L5dxj77duI67qu4M=
+		</data>
+		<key>Resources/assets/icon_16.png</key>
+		<data>
+		ZWkgLJa5tFetA7vstDj+XZsPYtk=
+		</data>
+		<key>Resources/assets/icon_256.png</key>
+		<data>
+		ptH00FVdXy6zD6IRFWyM7Vz0n8w=
+		</data>
+		<key>Resources/assets/icon_32.png</key>
+		<data>
+		MSfGBA12UfZc/hcJHMEzDg9eqac=
+		</data>
+		<key>Resources/assets/icon_512.png</key>
+		<data>
+		rWrmspD2EUDpcRorRnQ0vTJ6u/Q=
+		</data>
+		<key>Resources/assets/icon_64.png</key>
+		<data>
+		ANysMomXvpH/Ol4u+ytztYdVEtY=
+		</data>
 		<key>Resources/attrs-25.3.0.dist-info/INSTALLER</key>
 		<data>
 		16AxQdXWseiLa1nvCLZoHfISxZk=
@@ -42,7 +86,7 @@
 		</data>
 		<key>Resources/base_library.zip</key>
 		<data>
-		GXa6rZKQiPB1j4L2DuIBykq6Ej8=
+		hM0KdglNytvDKfmNqFH0pQAlNZ0=
 		</data>
 		<key>Resources/certifi/cacert.pem</key>
 		<data>
@@ -1200,9 +1244,9 @@
 		<data>
 		2zgBsB2Fe0ajYP7b5Ntf9UVTFpw=
 		</data>
-		<key>Resources/icon-windowed.icns</key>
+		<key>Resources/icon.icns</key>
 		<data>
-		eEHOuYpZLB0vKGVIWGZOh5rH8+o=
+		lzca0IcQjcR3/XUMzm0damIB+6g=
 		</data>
 		<key>Resources/setuptools-65.5.0.dist-info/INSTALLER</key>
 		<data>
@@ -2309,6 +2353,83 @@
 			KyU5w+ZOtsZqtz9oFLX38bmebVe813I1BTWEtxlBj78=
 			</data>
 		</dict>
+		<key>Resources/assets/icon.icns</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			0ckb9e2mBytncAnDcUQo4m6SmGR87nldbHh8WU9+5YE=
+			</data>
+		</dict>
+		<key>Resources/assets/icon.ico</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			9nBLJDtgrZCiDfhKBHw+UhjkxzFPW2GsoYQFrRdllwA=
+			</data>
+		</dict>
+		<key>Resources/assets/icon.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			H5+qWy3TcBvnaKf7YT6WeIJcZF3KKHKakTXvevuvvRo=
+			</data>
+		</dict>
+		<key>Resources/assets/icon.svg</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			/UunBxRd97KzgS2bD3Op6GnUsHn+IKbDsZWw/ygtyQY=
+			</data>
+		</dict>
+		<key>Resources/assets/icon_1024.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Z6yD+tuJevSCFsOLVLNmz4zDcrQnqczjXRED1kd8i5w=
+			</data>
+		</dict>
+		<key>Resources/assets/icon_128.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			tDR0TgyKNShmrNluLJY48L8jzUV2WOaJ51p8yDz75HI=
+			</data>
+		</dict>
+		<key>Resources/assets/icon_16.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			DfN4yoSTGEpt3ppToo4bNUHG/faqaPDorZUZk4pLS7w=
+			</data>
+		</dict>
+		<key>Resources/assets/icon_256.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			Z5c4j8+tQg2SF/Q35pm7xkllSmV2E0khZCXowr2dBE4=
+			</data>
+		</dict>
+		<key>Resources/assets/icon_32.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			zyfX8vfx9z82CZ9U0FoFV9HhqGUIvkqFeU0RyMNSj5E=
+			</data>
+		</dict>
+		<key>Resources/assets/icon_512.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			H5+qWy3TcBvnaKf7YT6WeIJcZF3KKHKakTXvevuvvRo=
+			</data>
+		</dict>
+		<key>Resources/assets/icon_64.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			z16TqfOY7gt/zabdW3op3rtUvYhd0j9LTcGtST4Pqks=
+			</data>
+		</dict>
 		<key>Resources/attrs-25.3.0.dist-info/INSTALLER</key>
 		<dict>
 			<key>hash2</key>
@@ -2348,7 +2469,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			TwSxK5VMueDOO1E67Rcfv0h5PNKBSo0dVjzQtUUJfLM=
+			xLoVPQJ4k4/7RLqqQc+kuMof0ObqMWBkt29n7J1JjJI=
 			</data>
 		</dict>
 		<key>Resources/certifi/cacert.pem</key>
@@ -4389,11 +4510,11 @@
 			<key>symlink</key>
 			<string>../Frameworks/frozenlist</string>
 		</dict>
-		<key>Resources/icon-windowed.icns</key>
+		<key>Resources/icon.icns</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			uQo7VuWRab4Phv4EEGmfQsyqFqDIXZgO8OtgaAMvCzY=
+			0ckb9e2mBytncAnDcUQo4m6SmGR87nldbHh8WU9+5YE=
 			</data>
 		</dict>
 		<key>Resources/lib-dynload</key>

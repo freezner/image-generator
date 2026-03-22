@@ -98,6 +98,15 @@ def build_app():
     if result.returncode == 0:
         print("\n✅ 빌드 완료!")
         
+        # macOS: 수정 스크립트 복사
+        if system == "Darwin":
+            fix_script = Path("scripts/Fix-Damaged-App.command")
+            if fix_script.exists():
+                dest = Path("dist/Fix-Damaged-App.command")
+                shutil.copy(fix_script, dest)
+                os.chmod(dest, 0o755)
+                print("📄 Fix-Damaged-App.command 복사됨")
+        
         # 결과물 위치 안내
         if system == "Darwin":
             app_path = f"dist/{APP_NAME}.app"
@@ -105,6 +114,8 @@ def build_app():
                 print(f"\n📦 앱 위치: {app_path}")
                 print(f"\n실행 방법:")
                 print(f"  open 'dist/{APP_NAME}.app'")
+                print(f"\n⚠️ 다른 Mac에서 '손상됨' 오류 시:")
+                print(f"  Fix-Damaged-App.command 더블클릭")
             else:
                 print(f"\n📦 결과물 위치: dist/{APP_NAME}/")
         elif system == "Windows":
@@ -119,11 +130,43 @@ def build_app():
         return False
 
 
+def create_dmg():
+    """macOS DMG 패키지 생성"""
+    if platform.system() != "Darwin":
+        print("❌ DMG 생성은 macOS에서만 가능합니다.")
+        return False
+    
+    dmg_script = Path("scripts/create-dmg.sh")
+    if not dmg_script.exists():
+        print(f"❌ DMG 스크립트를 찾을 수 없습니다: {dmg_script}")
+        return False
+    
+    print("\n📀 DMG 패키지 생성 중...")
+    result = subprocess.run(["bash", str(dmg_script)])
+    return result.returncode == 0
+
+
 def main():
     """메인 함수"""
+    import argparse
+    
+    parser = argparse.ArgumentParser(description=f"{APP_NAME} Build Script")
+    parser.add_argument("--dmg", action="store_true", help="DMG 패키지도 생성 (macOS)")
+    parser.add_argument("--dmg-only", action="store_true", help="DMG만 생성 (이미 빌드된 경우)")
+    args = parser.parse_args()
+    
     print("=" * 50)
     print(f"  {APP_NAME} Build Script")
     print("=" * 50)
+    
+    # DMG만 생성
+    if args.dmg_only:
+        if platform.system() != "Darwin":
+            print("❌ DMG 생성은 macOS에서만 가능합니다.")
+            sys.exit(1)
+        create_dmg()
+        print("\n완료!")
+        return
     
     # 작업 디렉토리 확인
     if not Path(MAIN_SCRIPT).exists():
@@ -148,7 +191,10 @@ def main():
             sys.exit(1)
     
     # 빌드
-    build_app()
+    if build_app():
+        # DMG 생성 (macOS + --dmg 옵션)
+        if args.dmg and platform.system() == "Darwin":
+            create_dmg()
     
     print("\n완료!")
 
