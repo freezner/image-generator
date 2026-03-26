@@ -16,7 +16,7 @@ import flet as ft
 
 # 앱 기본 설정
 APP_NAME = "JB Bank AI Image Generator"
-APP_VERSION = "1.0.0"
+APP_VERSION = "0.0.2"
 CONFIG_FILE = "config.json"
 ENV_FILE = ".env"
 
@@ -26,13 +26,13 @@ class ImageGeneratorApp:
     
     def __init__(self, page: ft.Page):
         self.page = page
-        self.page.title = APP_NAME
-        self.page.window.width = 900
-        self.page.window.height = 700
-        self.page.window.min_width = 700
+        self.page.title = f"{APP_NAME} v{APP_VERSION}"
+        self.page.window.width = 700
+        self.page.window.height = 600
+        self.page.window.min_width = 600
         self.page.window.min_height = 500
         self.page.theme_mode = ft.ThemeMode.SYSTEM
-        self.page.padding = 20
+        self.page.padding = 16
         
         # 상태 변수
         self.is_generating = False
@@ -46,21 +46,37 @@ class ImageGeneratorApp:
         
         # 컴포넌트 초기화
         self._initialize_components()
+        
+        # 3초 후에도 로딩 중이면 자동 갱신
+        def auto_refresh():
+            import time
+            time.sleep(3)
+            if "로딩 중" in self.character_text.value:
+                self._refresh_characters(None)
+        
+        threading.Thread(target=auto_refresh, daemon=True).start()
     
     def _create_ui(self):
         """UI 생성"""
         # 헤더
         header = ft.Row(
             controls=[
-                ft.Text(
-                    "🎨 JB Bank AI Image Generator",
-                    size=24,
-                    weight=ft.FontWeight.BOLD,
-                ),
+                ft.Row([
+                    ft.Text(
+                        "🎨 JB Bank AI Image Generator",
+                        size=20,
+                        weight=ft.FontWeight.BOLD,
+                    ),
+                    ft.Container(
+                        content=ft.Text(f"v{APP_VERSION}", size=11, color=ft.Colors.GREY_500),
+                        margin=ft.Margin(left=8, top=4, right=0, bottom=0),
+                    ),
+                ], spacing=0),
                 ft.Container(expand=True),
                 ft.IconButton(
                     icon=ft.Icons.SETTINGS,
                     tooltip="설정",
+                    icon_size=20,
                     on_click=self._open_settings,
                 ),
             ],
@@ -70,68 +86,91 @@ class ImageGeneratorApp:
         # 캐릭터 정보
         self.character_text = ft.Text(
             "🎭 등록된 캐릭터: 로딩 중...",
-            size=14,
+            size=13,
+        )
+        
+        self.character_chips = ft.Row(
+            controls=[],
+            spacing=4,
+            wrap=True,
         )
         
         self.open_assets_btn = ft.TextButton(
             content=ft.Row(
                 controls=[
-                    ft.Icon(ft.Icons.FOLDER_OPEN, size=16),
-                    ft.Text("캐릭터 폴더 열기", size=12),
+                    ft.Icon(ft.Icons.ADD_PHOTO_ALTERNATE, size=14),
+                    ft.Text("캐릭터 추가", size=11),
                 ],
                 tight=True,
-                spacing=4,
+                spacing=2,
             ),
             on_click=self._open_assets_folder,
-            visible=False,  # 캐릭터 없을 때만 표시
+            tooltip="캐릭터 폴더 열기 (이미지 추가)",
         )
         
         self.refresh_btn = ft.IconButton(
             icon=ft.Icons.REFRESH,
-            icon_size=18,
+            icon_size=16,
             tooltip="캐릭터 목록 새로고침",
             on_click=self._refresh_characters,
         )
         
-        self.character_row = ft.Row(
+        self.character_row = ft.Column(
             controls=[
-                self.character_text,
-                self.open_assets_btn,
-                self.refresh_btn,
+                ft.Row(
+                    controls=[
+                        self.character_text,
+                        ft.Container(expand=True),
+                        self.open_assets_btn,
+                        self.refresh_btn,
+                    ],
+                    spacing=4,
+                ),
+                self.character_chips,
             ],
-            spacing=10,
+            spacing=4,
         )
         
-        # 프롬프트 입력
-        self.prompt_field = ft.TextField(
-            label="📝 이미지 설명 입력",
-            hint_text="예: JB가 선물 상자를 들고 있는 모습",
+        # 프롬프트 입력 - 캐릭터 설명
+        self.character_prompt = ft.TextField(
+            label="🎭 캐릭터 동작/표정",
+            hint_text="예: JB가 선물 상자를 들고 웃고 있는 모습",
             multiline=True,
-            min_lines=3,
-            max_lines=5,
+            min_lines=2,
+            max_lines=3,
             expand=True,
+            text_size=13,
         )
         
-        # 옵션
-        self.enhance_checkbox = ft.Checkbox(
-            label="프롬프트 자동 최적화",
-            value=True,
+        # 프롬프트 입력 - 배경
+        self.background_prompt = ft.TextField(
+            label="🖼️ 배경 설정",
+            hint_text="예: 투명 배경 / 파란 하늘과 구름 / 사무실 내부 / 단색 흰 배경",
+            multiline=True,
+            min_lines=2,
+            max_lines=3,
+            expand=True,
+            text_size=13,
         )
+        
+        # 설정값 (설정 화면에서 변경)
+        self.enhance_enabled = True
+        self.image_count_value = "1"
         
         # 버튼
         self.generate_btn = ft.Button(
             content=ft.Row(
                 controls=[
-                    ft.Icon(ft.Icons.AUTO_AWESOME),
-                    ft.Text("이미지 생성"),
+                    ft.Icon(ft.Icons.AUTO_AWESOME, size=18),
+                    ft.Text("이미지 생성", size=14, weight=ft.FontWeight.W_500),
                 ],
                 tight=True,
-                spacing=8,
+                spacing=6,
             ),
             on_click=self._start_generation,
             style=ft.ButtonStyle(
-                padding=ft.Padding(left=30, top=15, right=30, bottom=15),
-                bgcolor=ft.Colors.BLUE,
+                padding=ft.Padding(left=24, top=12, right=24, bottom=12),
+                bgcolor=ft.Colors.BLUE_600,
                 color=ft.Colors.WHITE,
             ),
         )
@@ -139,11 +178,11 @@ class ImageGeneratorApp:
         self.open_folder_btn = ft.OutlinedButton(
             content=ft.Row(
                 controls=[
-                    ft.Icon(ft.Icons.FOLDER_OPEN),
-                    ft.Text("결과 폴더 열기"),
+                    ft.Icon(ft.Icons.FOLDER_OPEN, size=16),
+                    ft.Text("결과 폴더", size=13),
                 ],
                 tight=True,
-                spacing=8,
+                spacing=4,
             ),
             on_click=self._open_output_folder,
         )
@@ -156,8 +195,8 @@ class ImageGeneratorApp:
         
         self.status_text = ft.Text(
             "준비됨",
-            size=12,
-            color=ft.Colors.GREY_700,
+            size=11,
+            color=ft.Colors.GREY_600,
         )
         
         # 로그 출력
@@ -165,33 +204,35 @@ class ImageGeneratorApp:
             label="📋 로그",
             multiline=True,
             read_only=True,
-            min_lines=8,
-            max_lines=12,
+            min_lines=6,
+            max_lines=8,
             expand=True,
-            text_size=12,
+            text_size=11,
         )
         
-        # 레이아웃 구성
+        # 레이아웃 구성 - 밀도 높게
         self.page.add(
             header,
-            ft.Divider(),
+            ft.Divider(height=1),
             self.character_row,
-            ft.Container(height=10),
-            self.prompt_field,
-            ft.Container(height=10),
-            self.enhance_checkbox,
-            ft.Container(height=10),
+            ft.Container(height=6),
+            self.character_prompt,
+            ft.Container(height=4),
+            self.background_prompt,
+            ft.Container(height=6),
             ft.Row(
                 controls=[
                     self.generate_btn,
                     self.open_folder_btn,
+                    ft.Container(expand=True),
                 ],
-                spacing=10,
+                spacing=8,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
             ),
-            ft.Container(height=10),
+            ft.Container(height=4),
             self.progress_bar,
             self.status_text,
-            ft.Container(height=10),
+            ft.Container(height=4),
             self.log_output,
         )
     
@@ -254,13 +295,7 @@ class ImageGeneratorApp:
                 self._update_status("컴포넌트 초기화 중...", 0.7)
                 
                 # 캐릭터 목록 표시
-                available_chars = self.generator.get_available_characters()
-                if available_chars:
-                    self.character_text.value = f"🎭 등록된 캐릭터: {', '.join(available_chars)}"
-                    self.open_assets_btn.visible = False
-                else:
-                    self.character_text.value = "🎭 등록된 캐릭터: 없음"
-                    self.open_assets_btn.visible = True
+                self._update_character_display()
                 
                 self._log("✅ 초기화 완료!")
                 self._update_status("준비됨", 0)
@@ -296,8 +331,6 @@ class ImageGeneratorApp:
                 config = json.load(f)
                 brand = config.get("brand", {})
                 brand_name = brand.get("name", "")
-                main_color = brand.get("main_color", "")
-                sub_color = brand.get("sub_color", "")
         
         # 입력 필드
         api_key_field = ft.TextField(
@@ -314,16 +347,21 @@ class ImageGeneratorApp:
             expand=True,
         )
         
-        main_color_field = ft.TextField(
-            label="메인 컬러 (예: #FF6B35)",
-            value=main_color,
-            width=200,
+        # 생성 옵션
+        enhance_checkbox = ft.Checkbox(
+            label="프롬프트 자동 최적화",
+            value=self.enhance_enabled,
         )
         
-        sub_color_field = ft.TextField(
-            label="서브 컬러 (예: #004E89)",
-            value=sub_color,
-            width=200,
+        image_count_dropdown = ft.Dropdown(
+            label="생성 개수",
+            value=self.image_count_value,
+            options=[
+                ft.dropdown.Option("1", "1장"),
+                ft.dropdown.Option("2", "2장"),
+                ft.dropdown.Option("3", "3장"),
+            ],
+            width=120,
         )
         
         def save_settings(e):
@@ -345,18 +383,16 @@ class ImageGeneratorApp:
                 config["brand"] = {}
             
             new_brand = brand_name_field.value.strip()
-            new_main = main_color_field.value.strip()
-            new_sub = sub_color_field.value.strip()
             
             if new_brand:
                 config["brand"]["name"] = new_brand
-            if new_main:
-                config["brand"]["main_color"] = new_main
-            if new_sub:
-                config["brand"]["sub_color"] = new_sub
             
             with open(config_path, "w", encoding="utf-8") as f:
                 json.dump(config, f, indent=2, ensure_ascii=False)
+            
+            # 생성 옵션 저장 (인스턴스 변수)
+            self.enhance_enabled = enhance_checkbox.value
+            self.image_count_value = image_count_dropdown.value
             
             dialog.open = False
             self.page.update()
@@ -377,13 +413,13 @@ class ImageGeneratorApp:
                     controls=[
                         ft.Text("🔑 API 설정", weight=ft.FontWeight.BOLD),
                         api_key_field,
-                        ft.Container(height=20),
+                        ft.Container(height=15),
                         ft.Text("🎨 브랜드 설정", weight=ft.FontWeight.BOLD),
                         brand_name_field,
-                        ft.Row(
-                            controls=[main_color_field, sub_color_field],
-                            spacing=10,
-                        ),
+                        ft.Container(height=15),
+                        ft.Text("🖼️ 생성 옵션", weight=ft.FontWeight.BOLD),
+                        image_count_dropdown,
+                        enhance_checkbox,
                     ],
                     tight=True,
                     spacing=10,
@@ -432,15 +468,39 @@ class ImageGeneratorApp:
         self.generator._character_names = None
         
         # 캐릭터 목록 다시 로드
+        self._update_character_display()
+        
+        self.page.update()
+    
+    def _update_character_display(self):
+        """캐릭터 표시 업데이트"""
+        if not self.generator:
+            return
+        
         available_chars = self.generator.get_available_characters()
+        
         if available_chars:
-            self.character_text.value = f"🎭 등록된 캐릭터: {', '.join(available_chars)}"
-            self.open_assets_btn.visible = False
-            self._log(f"✅ {len(available_chars)}개 캐릭터 발견: {', '.join(available_chars)}")
+            self.character_text.value = f"🎭 등록된 캐릭터 ({len(available_chars)}개):"
+            
+            # 캐릭터 칩 생성
+            chips = []
+            for char_name in available_chars:
+                img_count = self.generator.get_character_image_count(char_name)
+                chip = ft.Chip(
+                    label=ft.Text(f"{char_name} ({img_count})", size=11),
+                    bgcolor=ft.Colors.BLUE_50,
+                    padding=ft.Padding(left=8, top=2, right=8, bottom=2),
+                )
+                chips.append(chip)
+            
+            self.character_chips.controls = chips
+            self.character_chips.visible = True
+            self._log(f"✅ {len(available_chars)}개 캐릭터: {', '.join(available_chars)}")
         else:
-            self.character_text.value = "🎭 등록된 캐릭터: 없음"
-            self.open_assets_btn.visible = True
-            self._log("⚠️ 캐릭터를 찾을 수 없습니다.")
+            self.character_text.value = "🎭 등록된 캐릭터: 없음 (캐릭터 추가 버튼 클릭)"
+            self.character_chips.controls = []
+            self.character_chips.visible = False
+            self._log("⚠️ 캐릭터를 찾을 수 없습니다. 캐릭터 폴더에 이미지를 추가하세요.")
         
         self.page.update()
     
@@ -463,10 +523,19 @@ class ImageGeneratorApp:
             self._show_error("컴포넌트가 초기화되지 않았습니다.\n설정에서 API 키를 확인하세요.")
             return
         
-        prompt = self.prompt_field.value.strip() if self.prompt_field.value else ""
-        if not prompt:
-            self._show_error("이미지 설명을 입력하세요.")
+        # 프롬프트 가져오기
+        char_prompt = self.character_prompt.value.strip() if self.character_prompt.value else ""
+        bg_prompt = self.background_prompt.value.strip() if self.background_prompt.value else ""
+        
+        if not char_prompt:
+            self._show_error("캐릭터 동작/표정을 입력하세요.")
             return
+        
+        # 프롬프트 합치기
+        if bg_prompt:
+            prompt = f"{char_prompt}. 배경: {bg_prompt}"
+        else:
+            prompt = char_prompt
         
         self.is_generating = True
         self.generate_btn.disabled = True
@@ -475,59 +544,91 @@ class ImageGeneratorApp:
         
         def generate_thread():
             try:
-                self._update_status("캐릭터 감지 중...", 0.1)
-                self._log(f"\n📝 입력: {prompt}")
+                # 생성 개수
+                num_images = int(self.image_count_value)
                 
-                # 캐릭터 감지
-                detected_char = self.generator.detect_character_from_prompt(prompt)
-                reference_images = self.generator.load_reference_images(detected_char)
+                self._update_status("캐릭터 감지 중...", 0.1)
+                self._log(f"\n📝 캐릭터: {char_prompt}")
+                if bg_prompt:
+                    self._log(f"🖼️ 배경: {bg_prompt}")
+                self._log(f"🔢 생성 개수: {num_images}장")
+                
+                # 여러 캐릭터 감지
+                detected_chars = self.generator.detect_characters_from_prompt(prompt)
+                
+                # 캐릭터별 이미지 그룹화
+                character_images = {}
+                if detected_chars:
+                    character_images = self.generator.load_reference_images_grouped(detected_chars)
+                
+                # 총 참조 이미지 수 계산
+                total_ref_images = sum(len(imgs) for imgs in character_images.values())
                 
                 # 프롬프트 정제
                 clean_prompt = prompt
-                if detected_char:
-                    clean_prompt = self.generator.remove_character_name_from_prompt(prompt, detected_char)
-                    self._log(f"🎭 캐릭터 감지: {detected_char}")
-                    self._log(f"   참조 이미지: {len(reference_images)}개")
+                if detected_chars:
+                    clean_prompt = self.generator.remove_character_names_from_prompt(prompt, detected_chars)
+                    self._log(f"🎭 캐릭터 감지: {', '.join(detected_chars)}")
+                    for char_name, imgs in character_images.items():
+                        self._log(f"   • {char_name}: {len(imgs)}개 참조 이미지")
+                    self._log(f"   총 참조 이미지: {total_ref_images}개")
                 
-                self._update_status("프롬프트 최적화 중...", 0.3)
+                self._update_status("프롬프트 최적화 중...", 0.2)
                 
                 # 프롬프트 향상
-                if self.enhance_checkbox.value:
+                if self.enhance_enabled:
                     self._log("🔄 프롬프트 최적화 중...")
                     enhanced = self.enhancer.enhance(clean_prompt)
                     self._log(f"   → {enhanced[:50]}...")
                 else:
                     enhanced = clean_prompt
                 
-                self._update_status("이미지 생성 중...", 0.5)
-                
                 # 최종 프롬프트 생성 (캐릭터 참조 시 색상 보존)
-                has_char_ref = bool(reference_images)
+                has_char_ref = bool(character_images)
                 final_prompt = self.builder.build_simple(enhanced, has_character_reference=has_char_ref)
                 negative = self.builder.get_negative_prompt()
                 
-                self._log("🎨 이미지 생성 중...")
+                # 여러 이미지 생성
+                generated_images = []  # (image, filepath) 리스트
                 
-                # 이미지 생성
-                try:
-                    image, filepath = self.generator.generate_and_save(
-                        prompt=final_prompt,
-                        reference_images=reference_images,
-                        negative_prompt=negative,
-                        name_hint=prompt[:30]
-                    )
-                except Exception as gen_err:
-                    self._log(f"❌ 생성 오류: {type(gen_err).__name__}: {gen_err}")
-                    import traceback
-                    self._log(f"   {traceback.format_exc()[:500]}")
-                    raise gen_err
+                for i in range(num_images):
+                    progress = 0.3 + (0.6 * i / num_images)
+                    self._update_status(f"이미지 생성 중... ({i+1}/{num_images})", progress)
+                    self._log(f"🎨 이미지 생성 중... ({i+1}/{num_images})")
+                    
+                    try:
+                        image, filepath = self.generator.generate_and_save(
+                            prompt=final_prompt,
+                            negative_prompt=negative,
+                            name_hint=f"{prompt[:25]}_{i+1}",
+                            character_images=character_images if character_images else None
+                        )
+                        if image and filepath:
+                            generated_images.append((image, filepath))
+                            self._log(f"   ✅ 저장: {filepath.name}")
+                    except Exception as gen_err:
+                        from src.image_generator import ImageGenerationError
+                        
+                        if isinstance(gen_err, ImageGenerationError):
+                            self._log(f"❌ 생성 오류 ({i+1}/{num_images}):\n{gen_err.user_message}")
+                            if i == 0:  # 첫 번째 이미지 실패 시 중단
+                                self.page.run_thread(
+                                    lambda: self._show_detailed_error(gen_err.user_message, gen_err.get_technical_details())
+                                )
+                                return
+                        else:
+                            self._log(f"❌ 생성 오류 ({i+1}/{num_images}): {gen_err}")
+                            if i == 0:
+                                raise gen_err
                 
                 self._update_status("완료!", 1.0)
                 
-                if image:
-                    self._log(f"✅ 이미지 생성 완료: {filepath}")
+                if generated_images:
+                    self._log(f"✅ 총 {len(generated_images)}장 생성 완료!")
+                    # 이미지 경로 리스트 전달
+                    filepaths = [fp for _, fp in generated_images]
                     self.page.run_thread(
-                        lambda: self._show_success(f"이미지가 생성되었습니다!\n\n저장 위치: {filepath}")
+                        lambda: self._show_success_with_preview(filepaths)
                     )
                 else:
                     self._log("❌ 이미지 생성 실패 (결과 없음)")
@@ -569,8 +670,65 @@ class ImageGeneratorApp:
         dialog.open = True
         self.page.update()
     
+    def _show_detailed_error(self, user_message: str, technical_details: str = ""):
+        """상세 에러 다이얼로그 (사용자 친화적 + 기술 정보)"""
+        show_details = {"value": False}
+        
+        def close(e):
+            dialog.open = False
+            self.page.update()
+        
+        def toggle_details(e):
+            show_details["value"] = not show_details["value"]
+            details_container.visible = show_details["value"]
+            toggle_btn.text = "기술 정보 숨기기" if show_details["value"] else "기술 정보 보기"
+            self.page.update()
+        
+        def copy_details(e):
+            self.page.set_clipboard(technical_details)
+            self._log("📋 기술 정보가 클립보드에 복사되었습니다.")
+        
+        # 기술 정보 컨테이너
+        details_container = ft.Container(
+            content=ft.Column([
+                ft.Divider(),
+                ft.Text("🔧 기술 정보 (지원 요청 시 사용)", size=12, weight=ft.FontWeight.BOLD),
+                ft.TextField(
+                    value=technical_details,
+                    multiline=True,
+                    read_only=True,
+                    min_lines=3,
+                    max_lines=6,
+                    text_size=10,
+                ),
+                ft.TextButton("복사", icon=ft.Icons.COPY, on_click=copy_details),
+            ], tight=True, spacing=5),
+            visible=False,
+        )
+        
+        toggle_btn = ft.TextButton("기술 정보 보기", on_click=toggle_details)
+        
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text("⚠️ 이미지 생성 실패"),
+            content=ft.Container(
+                content=ft.Column([
+                    ft.Text(user_message, selectable=True),
+                    ft.Container(height=10),
+                    toggle_btn,
+                    details_container,
+                ], tight=True, spacing=5),
+                width=400,
+                padding=10,
+            ),
+            actions=[ft.FilledButton("확인", on_click=close)],
+        )
+        self.page.overlay.append(dialog)
+        dialog.open = True
+        self.page.update()
+    
     def _show_success(self, message: str):
-        """성공 다이얼로그"""
+        """성공 다이얼로그 (기본)"""
         def close(e):
             dialog.open = False
             self.page.update()
@@ -592,6 +750,86 @@ class ImageGeneratorApp:
         self.page.overlay.append(dialog)
         dialog.open = True
         self.page.update()
+    
+    def _show_success_with_preview(self, filepaths: list):
+        """성공 다이얼로그 + 이미지 미리보기"""
+        import base64
+        
+        def close(e):
+            dialog.open = False
+            self.page.update()
+        
+        def open_folder(e):
+            dialog.open = False
+            self._open_output_folder(None)
+            self.page.update()
+        
+        # 이미지 미리보기 생성
+        preview_images = []
+        for fp in filepaths:
+            try:
+                # 이미지를 base64로 인코딩
+                with open(fp, "rb") as f:
+                    img_data = base64.b64encode(f.read()).decode()
+                
+                # 미리보기 컨테이너
+                preview = ft.Container(
+                    content=ft.Column([
+                        ft.Image(
+                            src_base64=img_data,
+                            width=150,
+                            height=150,
+                            fit="contain",
+                            border_radius=8,
+                        ),
+                        ft.Text(
+                            fp.name,
+                            size=10,
+                            color=ft.Colors.GREY_600,
+                            max_lines=1,
+                            overflow=ft.TextOverflow.ELLIPSIS,
+                            width=150,
+                            text_align=ft.TextAlign.CENTER,
+                        ),
+                    ], spacing=4, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+                    padding=4,
+                )
+                preview_images.append(preview)
+            except Exception as e:
+                self._log(f"⚠️ 미리보기 로드 실패: {fp.name}")
+        
+        # 미리보기 행
+        preview_row = ft.Row(
+            controls=preview_images,
+            spacing=12,
+            scroll=ft.ScrollMode.AUTO,
+            alignment=ft.MainAxisAlignment.CENTER,
+        )
+        
+        # 파일 경로 표시
+        paths_text = "\n".join([f"• {fp.name}" for fp in filepaths])
+        
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(f"✅ {len(filepaths)}장 생성 완료"),
+            content=ft.Container(
+                content=ft.Column([
+                    preview_row,
+                    ft.Container(height=8),
+                    ft.Text("저장된 파일:", size=12, weight=ft.FontWeight.BOLD),
+                    ft.Text(paths_text, size=11, color=ft.Colors.GREY_700),
+                ], spacing=4, tight=True),
+                width=min(180 * len(filepaths) + 40, 500),
+                padding=10,
+            ),
+            actions=[
+                ft.TextButton("확인", on_click=close),
+                ft.FilledButton("폴더 열기", on_click=open_folder),
+            ],
+        )
+        self.page.overlay.append(dialog)
+        dialog.open = True
+        self.page.update()
 
 
 def main(page: ft.Page):
@@ -600,4 +838,4 @@ def main(page: ft.Page):
 
 
 if __name__ == "__main__":
-    ft.app(main)
+    ft.app(target=main)  # Note: use ft.run() for Flet 0.80+

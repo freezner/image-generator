@@ -5,7 +5,7 @@ Brand-Sync AI Image Generator
 from .config_loader import Config, load_config
 from .prompt_enhancer import PromptEnhancer, create_enhancer
 from .prompt_builder import PromptBuilder, PromptVariables, create_builder
-from .image_generator import ImageGenerator, create_generator
+from .image_generator import ImageGenerator, ImageGenerationError, create_generator
 
 __all__ = [
     'Config',
@@ -16,6 +16,7 @@ __all__ = [
     'PromptVariables',
     'create_builder',
     'ImageGenerator',
+    'ImageGenerationError',
     'create_generator',
 ]
 

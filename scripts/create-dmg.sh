@@ -7,7 +7,7 @@ set -e
 
 APP_NAME="JB-Bank-Image-Generator"
 DMG_NAME="${APP_NAME}-Installer"
-VERSION="1.0.0"
+VERSION="0.0.2"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"

@@ -45,7 +45,7 @@ def build_macos():
         "--project", APP_NAME,
         "--org", "com.jbbank",
         "--product", APP_NAME,
-        "--build-version", "1.0.0",
+        "--build-version", "0.0.2",
         "--template", "gh:nickmyv/nickmyv",  # 기본 템플릿
     ]
     

@@ -47,7 +47,7 @@ flet build macos \
     --product "$PRODUCT_NAME" \
     --org "$ORG_NAME" \
     --description "JB Bank AI 캐릭터 이미지 생성기" \
-    --copyright "© 2024 JB Bank" \
+    --copyright "© 2026 JB Bank - Digital Asset Dept." \
     --module-name gui \
     --yes
 
