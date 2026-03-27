@@ -152,9 +152,6 @@ class ImageGeneratorApp:
             expand=True,
             text_size=13,
         )
-            expand=True,
-            text_size=13,
-        )
         
         # 설정값 (설정 화면에서 변경)
         self.enhance_enabled = True
@@ -761,9 +758,10 @@ class ImageGeneratorApp:
                     
             except Exception as ex:
                 import traceback
-                self._log(f"❌ 오류: {type(ex).__name__}: {ex}")
+                error_msg = str(ex)
+                self._log(f"❌ 오류: {type(ex).__name__}: {error_msg}")
                 self._log(f"   상세: {traceback.format_exc()[:300]}")
-                self.page.run_thread(lambda: self._show_error(str(ex)))
+                self.page.run_thread(lambda msg=error_msg: self._show_error(msg))
             finally:
                 self.is_generating = False
                 self.generate_btn.disabled = False
