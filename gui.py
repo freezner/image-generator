@@ -804,8 +804,8 @@ class ImageGeneratorApp:
                 update_preview()
         
         preview_image = ft.Image(src="", width=300, height=300, fit="contain", border_radius=8)
-        filename_text = ft.Text(size=12, color=ft.colors.GREY_700, text_align=ft.TextAlign.CENTER)
-        page_indicator = ft.Text(size=14, weight=ft.FontWeight.BOLD, color=ft.colors.PRIMARY)
+        filename_text = ft.Text(size=12, color=ft.Colors.GREY_700, text_align=ft.TextAlign.CENTER)
+        page_indicator = ft.Text(size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.PRIMARY)
         
         prev_btn = ft.IconButton(icon=ft.icons.ARROW_BACK_IOS, tooltip="이전 이미지", on_click=go_prev)
         next_btn = ft.IconButton(icon=ft.icons.ARROW_FORWARD_IOS, tooltip="다음 이미지", on_click=go_next)
