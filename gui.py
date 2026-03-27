@@ -525,19 +525,19 @@ class ImageGeneratorApp:
             self._update_character_display()
             self._log(f"🎭 '{char_name}' 크기 설정: ×{scale_slider.value:.1f}")
 
-        def on_slider_change(e):
-            # 슬라이더 값 변경 시 현재 값 텍스트 업데이트
-            current_value_text.value = f"현재: ×{scale_slider.value:.1f}"
-            self.page.update()
+        # 값 표시용 텍스트 (슬라이더 위에 표시)
+        value_display = ft.Text(f"×{current_scale:.1f}", size=24, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER)
 
-        current_value_text = ft.Text(f"현재: ×{current_scale:.1f}", size=14, weight=ft.FontWeight.BOLD)
+        def on_slider_change(e):
+            # 슬라이더 값 변경 시 값 표시 업데이트
+            value_display.value = f"×{scale_slider.value:.1f}"
+            self.page.update()
 
         scale_slider = ft.Slider(
             min=0.5,
             max=2.0,
             value=current_scale,
             divisions=15,
-            label="{value}",
             on_change=on_slider_change,
             width=300,
         )
@@ -548,11 +548,11 @@ class ImageGeneratorApp:
             content=ft.Column([
                 ft.Text("캐릭터 크기 가중치를 설정하세요.", size=12),
                 ft.Text("1.0 = 기본 크기, 0.5 = 절반, 2.0 = 2배", size=11, color=ft.Colors.GREY_600),
-                ft.Container(height=10),
+                ft.Container(height=15),
+                value_display,
+                ft.Container(height=5),
                 scale_slider,
-                ft.Container(height=10),
-                current_value_text,
-            ], tight=True, spacing=5),
+            ], tight=True, spacing=5, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
             actions=[
                 ft.TextButton("취소", on_click=close_dialog),
                 ft.FilledButton("저장", on_click=save_scale),
