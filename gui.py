@@ -841,5 +841,10 @@ class ImageGeneratorApp:
         self.page.update()
 
 
+def main(page: ft.Page):
+    """Flet 앱 진입점"""
+    ImageGeneratorApp(page)
+
+
 if __name__ == "__main__":
-    ft.app(target=main)  # Note: use ft.run() for Flet 0.80+
+    ft.app(target=main)
