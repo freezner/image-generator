@@ -215,9 +215,9 @@ class ImageGeneratorApp:
             header,
             ft.Divider(height=1),
             self.character_row,
-            ft.Container(height=6),
+            ft.Container(height=4),
             self.prompt_input,
-            ft.Container(height=6),
+            ft.Container(height=2),
             ft.Row(
                 controls=[
                     self.generate_btn,
