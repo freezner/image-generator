@@ -40,6 +40,7 @@ class ImageGeneratorApp:
         self.enhancer = None
         self.builder = None
         self.config = None
+        self.character_scales = {}  # 캐릭터별 크기 가중치 저장
         
         # UI 컴포넌트
         self._create_ui()
@@ -486,10 +487,12 @@ class ImageGeneratorApp:
             chips = []
             for char_name in available_chars:
                 img_count = self.generator.get_character_image_count(char_name)
+                scale = self.character_scales.get(char_name, 1.0)
                 chip = ft.Chip(
-                    label=ft.Text(f"{char_name} ({img_count})", size=11),
+                    label=ft.Text(f"{char_name} ({img_count}) ×{scale:.1f}", size=11),
                     bgcolor=ft.Colors.BLUE_50,
                     padding=ft.Padding(left=8, top=2, right=8, bottom=2),
+                    on_click=lambda e, name=char_name: self._open_character_scale_dialog(name),
                 )
                 chips.append(chip)
             
@@ -506,6 +509,52 @@ class ImageGeneratorApp:
     
     def _open_folder(self, folder_path: Path):
         """폴더 열기 (OS별)"""
+
+    def _open_character_scale_dialog(self, char_name: str):
+        """캐릭터 크기 설정 다이얼로그"""
+        current_scale = self.character_scales.get(char_name, 1.0)
+
+        def close_dialog(e):
+            dialog.open = False
+            self.page.update()
+
+        def save_scale(e):
+            self.character_scales[char_name] = scale_slider.value
+            dialog.open = False
+            self.page.update()
+            self._update_character_display()
+            self._log(f"🎭 '{char_name}' 크기 설정: ×{scale_slider.value:.1f}")
+
+        scale_slider = ft.Slider(
+            min=0.5,
+            max=2.0,
+            value=current_scale,
+            divisions=15,
+            label="{value:.1f}",
+            width=300,
+        )
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(f"🎭 {char_name} 크기 설정"),
+            content=ft.Column([
+                ft.Text("캐릭터 크기 가중치를 설정하세요.", size=12),
+                ft.Text("1.0 = 기본 크기, 0.5 = 절반, 2.0 = 2배", size=11, color=ft.Colors.GREY_600),
+                ft.Container(height=10),
+                scale_slider,
+                ft.Container(height=10),
+                ft.Text(f"현재: ×{current_scale:.1f}", size=14, weight=ft.FontWeight.BOLD),
+            ], tight=True, spacing=5),
+            actions=[
+                ft.TextButton("취소", on_click=close_dialog),
+                ft.FilledButton("저장", on_click=save_scale),
+            ],
+        )
+
+        self.page.overlay.append(dialog)
+        dialog.open = True
+        self.page.update()
+
         system = platform.system()
         if system == "Darwin":
             subprocess.run(["open", str(folder_path)])
