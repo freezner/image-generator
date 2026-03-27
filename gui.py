@@ -673,14 +673,18 @@ class ImageGeneratorApp:
                         final_prompt = f"CRITICAL SIZE RULE: {scale_text}. Maintain exact proportions. {final_prompt}"
                         self._log(f"📏 크기 설정: {scale_text}")
                 
+                # 최종 프롬프트 로그 출력
+                self._log(f"\n📝 최종 프롬프트:\n{final_prompt[:200]}...")
+                self._log(f"🚫 네거티브 프롬프트:\n{negative[:150]}...")
+
                 # 여러 이미지 생성
                 generated_images = []  # (image, filepath) 리스트
-                
+
                 for i in range(num_images):
                     progress = 0.3 + (0.6 * i / num_images)
                     self._update_status(f"이미지 생성 중... ({i+1}/{num_images})", progress)
-                    self._log(f"🎨 이미지 생성 중... ({i+1}/{num_images})")
-                    
+                    self._log(f"\n🎨 이미지 생성 중... ({i+1}/{num_images})")
+
                     try:
                         image, filepath = self.generator.generate_and_save(
                             prompt=final_prompt,
