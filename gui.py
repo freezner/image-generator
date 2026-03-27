@@ -418,16 +418,10 @@ class ImageGeneratorApp:
         
         dialog = ft.AlertDialog(
             modal=True,
-            title=ft.Text("⚙️ 설정"),
+            title=ft.Text(f"⚙️ 설정  (v{APP_VERSION})"),
             content=ft.Container(
                 content=ft.Column(
                     controls=[
-                        ft.Row([
-                            ft.Text("버전", size=12, color=ft.Colors.GREY_600),
-                            ft.Text(f"v{APP_VERSION}", size=12, weight=ft.FontWeight.BOLD),
-                        ], spacing=8),
-                        ft.Divider(height=1),
-                        ft.Container(height=10),
                         ft.Text("🔑 API 설정", weight=ft.FontWeight.BOLD),
                         api_key_field,
                         ft.Container(height=15),
