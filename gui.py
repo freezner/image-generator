@@ -661,28 +661,38 @@ class ImageGeneratorApp:
                 
                 # 2. 각 캐릭터별 고유 속성 프롬프트 생성
                 char_specific_prompts = []
+                size_constraints = []  # 크기 강제 규칙 별도 수집
+                
                 for char_name in detected_chars:
                     attrs = char_attributes.get(char_name, [])
                     attr_text = ", ".join(attrs) if attrs else "default appearance"
                     
-                    # 크기 가중치 적용
+                    # 크기 가중치 적용 - 더 강제적인 표현
                     scale = self.character_scales.get(char_name, 1.0)
                     scale_text = ""
                     if scale != 1.0:
                         if scale < 1.0:
-                            scale_text = f" [SIZE: {scale:.1f}x smaller]"
+                            scale_text = f" (small {scale:.1f}x)"
+                            size_constraints.append(f"{char_name} height must be exactly {int(scale*100)}% of normal")
                         else:
-                            scale_text = f" [SIZE: {scale:.1f}x larger]"
+                            scale_text = f" (large {scale:.1f}x)"
+                            size_constraints.append(f"{char_name} height must be exactly {int(scale*100)}% of normal")
                     
                     char_specific_prompts.append(f"{char_name}: {attr_text}{scale_text}")
+                
+                # 2.5 크기 강제 규칙을 별도로 추가
+                size_rule = ""
+                if size_constraints:
+                    size_rule = "STRICT SIZE RULE: " + "; ".join(size_constraints) + ". "
+                    self._log(f"📏 강제 크기: {'; '.join(size_constraints)}")
                 
                 # 3. 최종 프롬프트 조립
                 has_char_ref = bool(character_images)
                 base_prompt = self.builder.build_simple(enhanced, has_character_reference=has_char_ref)
                 
-                # 캐릭터별 속성을 명확히 분리
+                # 캐릭터별 속성을 명확히 분리 + 크기 강제 규칙 추가
                 char_rules = " | ".join(char_specific_prompts)
-                final_prompt = f"CHARACTER RULES: {char_rules}. {base_prompt}"
+                final_prompt = f"{size_rule}CHARACTER RULES: {char_rules}. {base_prompt}"
                 
                 negative = self.builder.get_negative_prompt()
 
