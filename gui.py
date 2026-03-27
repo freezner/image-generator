@@ -1044,7 +1044,7 @@ class ImageGeneratorApp:
         """기존 이미지를 참조로 2차 생성"""
         try:
             self.is_generating = True
-            self.page.run(lambda: self._update_status("2차 가공 중...", 0.3))
+            self._update_status("2차 가공 중...", 0.3)
 
             # 참조 이미지 로드
             from PIL import Image
@@ -1066,17 +1066,17 @@ class ImageGeneratorApp:
 
             if image and filepath:
                 self._log(f"   ✅ 저장: {filepath.name}")
-                self.page.run(lambda: self._show_success_with_preview([filepath]))
+                self._show_success_with_preview([filepath])
             else:
                 self._log("   ❌ 생성 실패")
-                self.page.run(lambda: self._show_error("2차 가공에 실패했습니다."))
+                self._show_error("2차 가공에 실패했습니다.")
 
         except Exception as e:
             self._log(f"❌ 2차 가공 오류: {e}")
-            self.page.run(lambda: self._show_error(str(e)))
+            self._show_error(str(e))
         finally:
             self.is_generating = False
-            self.page.run(lambda: self._update_status("준비됨", 0))
+            self._update_status("준비됨", 0)
 
 
 def main(page: ft.Page):
