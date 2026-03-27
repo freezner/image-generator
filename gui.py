@@ -646,6 +646,22 @@ class ImageGeneratorApp:
                 has_char_ref = bool(character_images)
                 final_prompt = self.builder.build_simple(enhanced, has_character_reference=has_char_ref)
                 negative = self.builder.get_negative_prompt()
+
+                # 캐릭터 크기 가중치 프롬프트에 추가
+                if detected_chars and self.character_scales:
+                    scale_instructions = []
+                    for char_name in detected_chars:
+                        if char_name in self.character_scales:
+                            scale = self.character_scales[char_name]
+                            if scale != 1.0:
+                                if scale < 1.0:
+                                    scale_instructions.append(f"{char_name} is smaller than usual ({scale:.1f}x scale)")
+                                else:
+                                    scale_instructions.append(f"{char_name} is larger than usual ({scale:.1f}x scale)")
+                    if scale_instructions:
+                        scale_text = "; ".join(scale_instructions)
+                        final_prompt = f"{final_prompt} Character size: {scale_text}."
+                        self._log(f"📏 크기 설정: {scale_text}")
                 
                 # 여러 이미지 생성
                 generated_images = []  # (image, filepath) 리스트
