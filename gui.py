@@ -597,9 +597,7 @@ class ImageGeneratorApp:
                 num_images = int(self.image_count_value)
                 
                 self._update_status("캐릭터 감지 중...", 0.1)
-                self._log(f"\n📝 캐릭터: {char_prompt}")
-                if bg_prompt:
-                    self._log(f"🖼️ 배경: {bg_prompt}")
+                self._log(f"\n📝 프롬프트: {prompt[:50]}...")
                 self._log(f"🔢 생성 개수: {num_images}장")
                 
                 # 여러 캐릭터 감지
