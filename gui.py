@@ -60,18 +60,31 @@ class ImageGeneratorApp:
     def _create_ui(self):
         """UI 생성"""
         # 헤더
+        logo_path = Path("resources/logo.png")
+        logo_src = str(logo_path) if logo_path.exists() else None
+        
         header = ft.Row(
             controls=[
                 ft.Row([
-                    ft.Text(
-                        "🎨 JB Bank AI Image Generator",
-                        size=20,
-                        weight=ft.FontWeight.BOLD,
-                    ),
-                    ft.Container(
-                        content=ft.Text(f"v{APP_VERSION}", size=11, color=ft.Colors.GREY_500),
-                        margin=ft.Margin(left=8, top=4, right=0, bottom=0),
-                    ),
+                    ft.Image(
+                        src=logo_src if logo_src else None,
+                        width=40,
+                        height=40,
+                        fit="contain",
+                    ) if logo_src else ft.Container(),
+                    ft.Container(width=12) if logo_src else ft.Container(),
+                    ft.Column([
+                        ft.Text(
+                            "JB Bank AI Image Generator",
+                            size=20,
+                            weight=ft.FontWeight.BOLD,
+                        ),
+                        ft.Text(
+                            f"v{APP_VERSION}",
+                            size=11,
+                            color=ft.Colors.GREY_500,
+                        ),
+                    ], spacing=0, alignment=ft.CrossAxisAlignment.START),
                 ], spacing=0),
                 ft.Container(expand=True),
                 ft.IconButton(
