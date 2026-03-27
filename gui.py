@@ -647,20 +647,27 @@ class ImageGeneratorApp:
                 final_prompt = self.builder.build_simple(enhanced, has_character_reference=has_char_ref)
                 negative = self.builder.get_negative_prompt()
 
-                # 캐릭터 크기 가중치 프롬프트에 추가
+                # 배경 설정이 없는 경우 투명 배경 추가
+                if not bg_prompt:
+                    final_prompt = f"{final_prompt} Transparent background, PNG format with alpha channel."
+                    self._log("🫥 배경: 투명 (PNG)")
+
+                # 캐릭터 크기 가중치 프롬프트에 추가 (강력한 지시문 사용)
                 if detected_chars and self.character_scales:
-                    scale_instructions = []
+                    scale_parts = []
                     for char_name in detected_chars:
                         if char_name in self.character_scales:
                             scale = self.character_scales[char_name]
                             if scale != 1.0:
+                                # 더 명확하고 강제적인 프롬프트
                                 if scale < 1.0:
-                                    scale_instructions.append(f"{char_name} is smaller than usual ({scale:.1f}x scale)")
+                                    scale_parts.append(f"{char_name} must appear {scale:.1f}x smaller than normal size")
                                 else:
-                                    scale_instructions.append(f"{char_name} is larger than usual ({scale:.1f}x scale)")
-                    if scale_instructions:
-                        scale_text = "; ".join(scale_instructions)
-                        final_prompt = f"{final_prompt} Character size: {scale_text}."
+                                    scale_parts.append(f"{char_name} must appear {scale:.1f}x larger than normal size")
+                    if scale_parts:
+                        scale_text = "; ".join(scale_parts)
+                        # 프롬프트 앞부분에 강하게 배치
+                        final_prompt = f"CRITICAL SIZE RULE: {scale_text}. Maintain exact proportions. {final_prompt}"
                         self._log(f"📏 크기 설정: {scale_text}")
                 
                 # 여러 이미지 생성
