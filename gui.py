@@ -752,8 +752,14 @@ class ImageGeneratorApp:
         self.page.update()
     
     def _show_success_with_preview(self, filepaths: list):
-        """성공 다이얼로그 + 이미지 미리보기"""
+        """성공 다이얼로그 + 이미지 미리보기 + 페이징"""
         import base64
+        
+        if not filepaths:
+            self._show_success("이미지가 생성되었습니다.")
+            return
+        
+        current_index = [0]
         
         def close(e):
             dialog.open = False
@@ -764,77 +770,75 @@ class ImageGeneratorApp:
             self._open_output_folder(None)
             self.page.update()
         
-        # 이미지 미리보기 생성
-        preview_images = []
-        for fp in filepaths:
+        def load_image(index: int):
+            fp = filepaths[index]
             try:
-                # 이미지를 base64로 인코딩
                 with open(fp, "rb") as f:
                     img_data = base64.b64encode(f.read()).decode()
-                
-                # 미리보기 컨테이너
-                preview = ft.Container(
-                    content=ft.Column([
-                        ft.Image(
-                            src_base64=img_data,
-                            width=150,
-                            height=150,
-                            fit="contain",
-                            border_radius=8,
-                        ),
-                        ft.Text(
-                            fp.name,
-                            size=10,
-                            color=ft.Colors.GREY_600,
-                            max_lines=1,
-                            overflow=ft.TextOverflow.ELLIPSIS,
-                            width=150,
-                            text_align=ft.TextAlign.CENTER,
-                        ),
-                    ], spacing=4, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
-                    padding=4,
-                )
-                preview_images.append(preview)
-            except Exception as e:
-                self._log(f"⚠️ 미리보기 로드 실패: {fp.name}")
+                return img_data, fp.name
+            except Exception:
+                return None, fp.name
         
-        # 미리보기 행
-        preview_row = ft.Row(
-            controls=preview_images,
-            spacing=12,
-            scroll=ft.ScrollMode.AUTO,
-            alignment=ft.MainAxisAlignment.CENTER,
+        def update_preview():
+            idx = current_index[0]
+            img_data, filename = load_image(idx)
+            if img_data:
+                preview_image.src_base64 = img_data
+                preview_image.visible = True
+            else:
+                preview_image.visible = False
+            filename_text.value = filename
+            page_indicator.value = f"{idx + 1} / {len(filepaths)}"
+            prev_btn.disabled = (idx == 0)
+            next_btn.disabled = (idx == len(filepaths) - 1)
+            self.page.update()
+        
+        def go_prev(e):
+            if current_index[0] > 0:
+                current_index[0] -= 1
+                update_preview()
+        
+        def go_next(e):
+            if current_index[0] < len(filepaths) - 1:
+                current_index[0] += 1
+                update_preview()
+        
+        preview_image = ft.Image(width=300, height=300, fit="contain", border_radius=8)
+        filename_text = ft.Text(size=12, color=ft.colors.GREY_700, text_align=ft.TextAlign.CENTER)
+        page_indicator = ft.Text(size=14, weight=ft.FontWeight.BOLD, color=ft.colors.PRIMARY)
+        
+        prev_btn = ft.IconButton(icon=ft.icons.ARROW_BACK_IOS, tooltip="이전 이미지", on_click=go_prev)
+        next_btn = ft.IconButton(icon=ft.icons.ARROW_FORWARD_IOS, tooltip="다음 이미지", on_click=go_next)
+        
+        preview_container = ft.Container(
+            content=ft.Column([
+                ft.Row([
+                    prev_btn,
+                    ft.Container(content=preview_image, alignment=ft.alignment.center, width=320, height=320),
+                    next_btn,
+                ], alignment=ft.MainAxisAlignment.CENTER),
+                ft.Container(height=8),
+                filename_text,
+                ft.Container(height=4),
+                page_indicator,
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+            padding=10,
         )
-        
-        # 파일 경로 표시
-        paths_text = "\n".join([f"• {fp.name}" for fp in filepaths])
         
         dialog = ft.AlertDialog(
             modal=True,
             title=ft.Text(f"✅ {len(filepaths)}장 생성 완료"),
-            content=ft.Container(
-                content=ft.Column([
-                    preview_row,
-                    ft.Container(height=8),
-                    ft.Text("저장된 파일:", size=12, weight=ft.FontWeight.BOLD),
-                    ft.Text(paths_text, size=11, color=ft.Colors.GREY_700),
-                ], spacing=4, tight=True),
-                width=min(180 * len(filepaths) + 40, 500),
-                padding=10,
-            ),
+            content=ft.Container(content=preview_container, width=420),
             actions=[
                 ft.TextButton("확인", on_click=close),
-                ft.FilledButton("폴더 열기", on_click=open_folder),
+                ft.FilledButton("폴다 열기", on_click=open_folder),
             ],
         )
+        
         self.page.overlay.append(dialog)
         dialog.open = True
+        update_preview()
         self.page.update()
-
-
-def main(page: ft.Page):
-    """Flet 앱 진입점"""
-    ImageGeneratorApp(page)
 
 
 if __name__ == "__main__":
