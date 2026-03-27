@@ -975,7 +975,7 @@ class ImageGeneratorApp:
         
         # 2차 가공 프롬프트 입력
         regenerate_prompt = ft.TextField(
-            label="🔄 추가 생성 프롬프트 (선택)",
+            label="추가 생성 프롬프트 (선택)",
             hint_text="예: 배경을 바다로 변경, 옷을 빨간색으로 변경 등",
             multiline=True,
             min_lines=2,
@@ -1007,15 +1007,24 @@ class ImageGeneratorApp:
 
         preview_container = ft.Container(
             content=ft.Column([
-                ft.Row([
-                    prev_btn,
-                    ft.Container(content=preview_image, alignment=ft.Alignment(0, 0), width=320, height=320),
-                    next_btn,
-                ], alignment=ft.MainAxisAlignment.CENTER),
-                ft.Container(height=8),
+                # 미리보기 이미지 (중앙)
+                ft.Container(
+                    content=preview_image,
+                    alignment=ft.Alignment(0, 0),
+                    width=320,
+                    height=320,
+                ),
+                # 파일명과 페이지 인디케이터
                 filename_text,
                 ft.Container(height=4),
                 page_indicator,
+                ft.Container(height=8),
+                # 네비게이션 버튼 (이미지 아래)
+                ft.Row([
+                    prev_btn,
+                    ft.Container(width=20),
+                    next_btn,
+                ], alignment=ft.MainAxisAlignment.CENTER),
                 ft.Divider(height=1),
                 ft.Container(height=8),
                 ft.Text("🔄 2차 가공", size=12, weight=ft.FontWeight.BOLD),
