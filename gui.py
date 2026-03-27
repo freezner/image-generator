@@ -59,20 +59,20 @@ class ImageGeneratorApp:
     
     def _create_ui(self):
         """UI 생성"""
-        # 헤더
-        logo_path = Path("resources/logo.png")
-        logo_src = str(logo_path) if logo_path.exists() else None
+        # 헤더 - 로고 이미지 확인
+        logo_path = Path(__file__).parent / "resources" / "logo.png"
+        logo_exists = logo_path.exists()
         
         header = ft.Row(
             controls=[
                 ft.Row([
                     ft.Image(
-                        src=logo_src if logo_src else None,
+                        src=str(logo_path.absolute()) if logo_exists else None,
                         width=40,
                         height=40,
                         fit="contain",
-                    ) if logo_src else ft.Container(),
-                    ft.Container(width=12) if logo_src else ft.Container(),
+                    ) if logo_exists else ft.Container(),
+                    ft.Container(width=12) if logo_exists else ft.Container(),
                     ft.Column([
                         ft.Text(
                             "JB Bank AI Image Generator",
