@@ -5,7 +5,7 @@
 
 set -e
 
-APP_NAME="JB-Bank-Image-Generator"
+APP_NAME="JB Bank Image Generator"
 DMG_NAME="${APP_NAME}-Installer"
 VERSION="0.0.2"
 
@@ -70,10 +70,10 @@ JB Bank AI Image Generator
 ==========================
 
 설치 방법:
-1. JB-Bank-Image-Generator.app을 Applications 폴더로 드래그
+1. JB Bank Image Generator.app을 Applications 폴더로 드래그
 2. 처음 실행 시 "손상됨" 오류가 나타나면:
    - Fix-Damaged-App.command를 더블클릭하여 실행
-   - 또는 터미널에서: xattr -cr /Applications/JB-Bank-Image-Generator.app
+   - 또는 터미널에서: xattr -cr /Applications/JB Bank Image Generator.app
 
 사용 방법:
 1. 앱 실행

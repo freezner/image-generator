@@ -54,7 +54,7 @@ class ImageGeneratorApp:
     def _create_ui(self):
         """UI 생성"""
         # 헤더 - 로고 이미지 확인
-        logo_path = Path(__file__).parent / "resources" / "logo.png"
+        logo_path = Path(__file__).parent / "assets" / "logo.png"
         logo_exists = logo_path.exists()
         
         header = ft.Row(

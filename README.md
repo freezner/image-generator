@@ -140,8 +140,8 @@ python build.py
 ```
 
 **결과물:**
-- macOS: `dist/JB-Bank-Image-Generator.app`
-- Windows: `dist/JB-Bank-Image-Generator/JB-Bank-Image-Generator.exe`
+- macOS: `dist/JB Bank Image Generator.app`
+- Windows: `dist/JB Bank Image Generator/JB Bank Image Generator.exe`
 
 ## ⚙️ 설정
 

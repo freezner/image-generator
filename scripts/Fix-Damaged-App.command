@@ -11,7 +11,7 @@ echo ""
 
 # 스크립트 위치 기준으로 앱 찾기
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-APP_NAME="JB-Bank-Image-Generator.app"
+APP_NAME="JB Bank Image Generator.app"
 APP_PATH="$SCRIPT_DIR/$APP_NAME"
 
 # 앱 존재 확인

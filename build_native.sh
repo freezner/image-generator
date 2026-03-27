@@ -6,7 +6,7 @@
 
 set -e
 
-APP_NAME="JB-Bank-Image-Generator"
+APP_NAME="JB Bank Image Generator"
 ORG_NAME="com.jbbank"
 PRODUCT_NAME="JB Bank Image Generator"
 

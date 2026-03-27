@@ -9,7 +9,7 @@ import subprocess
 import shutil
 from pathlib import Path
 
-APP_NAME = "JB-Bank-Image-Generator"
+APP_NAME = "JB Bank Image Generator"
 BUNDLE_ID = "com.jbbank.imagegenerator"
 
 def check_flet_cli():

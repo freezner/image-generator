@@ -11,7 +11,7 @@ import shutil
 from pathlib import Path
 
 
-APP_NAME = "JB-Bank-Image-Generator"
+APP_NAME = "JB Bank Image Generator"
 MAIN_SCRIPT = "gui.py"
 
 
