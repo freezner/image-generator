@@ -973,10 +973,110 @@ class ImageGeneratorApp:
             ],
         )
         
+        # 2차 가공 프롬프트 입력
+        regenerate_prompt = ft.TextField(
+            label="🔄 추가 생성 프롬프트 (선택)",
+            hint_text="예: 배경을 바다로 변경, 옷을 빨간색으로 변경 등",
+            multiline=True,
+            min_lines=2,
+            max_lines=3,
+            width=380,
+        )
+
+        def regenerate_image(e):
+            """현재 이미지를 기반으로 추가 생성"""
+            additional_prompt = regenerate_prompt.value.strip()
+            if not additional_prompt:
+                self._show_error("추가 생성 프롬프트를 입력하세요.")
+                return
+
+            dialog.open = False
+            self.page.update()
+
+            # 현재 선택된 이미지를 참조로 새로운 생성 시작
+            current_fp = filepaths[current_index[0]]
+            self._log(f"\n🔄 2차 가공 시작: {current_fp.name}")
+            self._log(f"   추가 프롬프트: {additional_prompt}")
+
+            # 2차 생성 스레드 시작
+            threading.Thread(
+                target=self._regenerate_from_image,
+                args=(current_fp, additional_prompt),
+                daemon=True
+            ).start()
+
+        preview_container = ft.Container(
+            content=ft.Column([
+                ft.Row([
+                    prev_btn,
+                    ft.Container(content=preview_image, alignment=ft.Alignment(0, 0), width=320, height=320),
+                    next_btn,
+                ], alignment=ft.MainAxisAlignment.CENTER),
+                ft.Container(height=8),
+                filename_text,
+                ft.Container(height=4),
+                page_indicator,
+                ft.Divider(height=1),
+                ft.Container(height=8),
+                ft.Text("🔄 2차 가공", size=12, weight=ft.FontWeight.BOLD),
+                regenerate_prompt,
+            ], horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.ScrollMode.AUTO),
+            padding=10,
+        )
+
+        dialog = ft.AlertDialog(
+            modal=True,
+            title=ft.Text(f"{len(filepaths)}장 생성 완료"),
+            content=ft.Container(content=preview_container, width=420, height=500),
+            actions=[
+                ft.TextButton("확인", on_click=close),
+                ft.FilledButton("폴다 열기", on_click=open_folder),
+                ft.FilledButton("추가 생성", on_click=regenerate_image),
+            ],
+        )
+
         self.page.overlay.append(dialog)
         dialog.open = True
         update_preview()
         self.page.update()
+
+    def _regenerate_from_image(self, image_path: Path, additional_prompt: str):
+        """기존 이미지를 참조로 2차 생성"""
+        try:
+            self.is_generating = True
+            self.page.run(lambda: self._update_status("2차 가공 중...", 0.3))
+
+            # 참조 이미지 로드
+            from PIL import Image
+            ref_image = Image.open(image_path)
+
+            # 원본 프롬프트 + 추가 프롬프트
+            base_name = image_path.stem
+            final_prompt = f"Modify this image: {additional_prompt}. Keep the main subject consistent."
+
+            self._log(f"🎨 2차 생성 중...")
+            self._log(f"   프롬프트: {final_prompt[:80]}...")
+
+            # 이미지 생성
+            image, filepath = self.generator.generate_and_save(
+                prompt=final_prompt,
+                name_hint=f"{base_name}_modified",
+                reference_images=[ref_image],
+            )
+
+            if image and filepath:
+                self._log(f"   ✅ 저장: {filepath.name}")
+                self.page.run(lambda: self._show_success_with_preview([filepath]))
+            else:
+                self._log("   ❌ 생성 실패")
+                self.page.run(lambda: self._show_error("2차 가공에 실패했습니다."))
+
+        except Exception as e:
+            self._log(f"❌ 2차 가공 오류: {e}")
+            self.page.run(lambda: self._show_error(str(e)))
+        finally:
+            self.is_generating = False
+            self.page.run(lambda: self._update_status("준비됨", 0))
 
 
 def main(page: ft.Page):
