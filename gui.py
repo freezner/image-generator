@@ -563,6 +563,8 @@ class ImageGeneratorApp:
         dialog.open = True
         self.page.update()
 
+    def _open_folder(self, folder_path: Path):
+        """폴다 열기 (OS별)"""
         system = platform.system()
         if system == "Darwin":
             subprocess.run(["open", str(folder_path)])
@@ -570,7 +572,7 @@ class ImageGeneratorApp:
             subprocess.run(["explorer", str(folder_path)])
         else:
             subprocess.run(["xdg-open", str(folder_path)])
-    
+
     def _start_generation(self, e):
         """이미지 생성 시작"""
         if self.is_generating:
