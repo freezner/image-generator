@@ -803,7 +803,7 @@ class ImageGeneratorApp:
                 current_index[0] += 1
                 update_preview()
         
-        preview_image = ft.Image(width=300, height=300, fit="contain", border_radius=8)
+        preview_image = ft.Image(src_base64="", width=300, height=300, fit="contain", border_radius=8)
         filename_text = ft.Text(size=12, color=ft.colors.GREY_700, text_align=ft.TextAlign.CENTER)
         page_indicator = ft.Text(size=14, weight=ft.FontWeight.BOLD, color=ft.colors.PRIMARY)
         
