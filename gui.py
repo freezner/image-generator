@@ -803,7 +803,7 @@ class ImageGeneratorApp:
                 current_index[0] += 1
                 update_preview()
         
-        preview_image = ft.Image(src="", width=300, height=300, fit="contain", border_radius=8)
+        preview_image = ft.Image(src="", width=300, height=300, fit="contain", border_radius=0)
         filename_text = ft.Text(size=12, color=ft.Colors.GREY_700, text_align=ft.TextAlign.CENTER)
         page_indicator = ft.Text(size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.PRIMARY)
         
@@ -827,11 +827,11 @@ class ImageGeneratorApp:
         
         dialog = ft.AlertDialog(
             modal=True,
-            title=ft.Text(f"✅ {len(filepaths)}장 생성 완료"),
+            title=ft.Text(f"{len(filepaths)}장 생성 완료"),
             content=ft.Container(content=preview_container, width=420),
             actions=[
                 ft.TextButton("확인", on_click=close),
-                ft.FilledButton("폴다 열기", on_click=open_folder),
+                ft.FilledButton("폴더 열기", on_click=open_folder),
             ],
         )
         
