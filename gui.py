@@ -525,12 +525,20 @@ class ImageGeneratorApp:
             self._update_character_display()
             self._log(f"🎭 '{char_name}' 크기 설정: ×{scale_slider.value:.1f}")
 
+        def on_slider_change(e):
+            # 슬라이더 값 변경 시 현재 값 텍스트 업데이트
+            current_value_text.value = f"현재: ×{scale_slider.value:.1f}"
+            self.page.update()
+
+        current_value_text = ft.Text(f"현재: ×{current_scale:.1f}", size=14, weight=ft.FontWeight.BOLD)
+
         scale_slider = ft.Slider(
             min=0.5,
             max=2.0,
             value=current_scale,
             divisions=15,
-            label="{value:.1f}",
+            label="{value}",
+            on_change=on_slider_change,
             width=300,
         )
 
@@ -543,7 +551,7 @@ class ImageGeneratorApp:
                 ft.Container(height=10),
                 scale_slider,
                 ft.Container(height=10),
-                ft.Text(f"현재: ×{current_scale:.1f}", size=14, weight=ft.FontWeight.BOLD),
+                current_value_text,
             ], tight=True, spacing=5),
             actions=[
                 ft.TextButton("취소", on_click=close_dialog),
