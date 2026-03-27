@@ -135,31 +135,16 @@ class ImageGeneratorApp:
                         self.open_assets_btn,
                         self.refresh_btn,
                     ],
-                    spacing=4,
-                ),
-                self.character_chips,
-            ],
-            spacing=4,
-        )
-        
-        # 프롬프트 입력 - 캐릭터 설명
-        self.character_prompt = ft.TextField(
-            label="🎭 캐릭터 동작/표정",
-            hint_text="예: JB가 선물 상자를 들고 웃고 있는 모습",
+        # 프롬프트 입력 (통합)
+        self.prompt_input = ft.TextField(
+            label="프롬프트",
+            hint_text="예: JB가 선물 상자를 들고 웃고 있는 모습, 투명 배경",
             multiline=True,
-            min_lines=2,
-            max_lines=3,
+            min_lines=3,
+            max_lines=5,
             expand=True,
             text_size=13,
         )
-        
-        # 프롬프트 입력 - 배경
-        self.background_prompt = ft.TextField(
-            label="🖼️ 배경 설정",
-            hint_text="예: 투명 배경 / 파란 하늘과 구름 / 사무실 내부 / 단색 흰 배경",
-            multiline=True,
-            min_lines=2,
-            max_lines=3,
             expand=True,
             text_size=13,
         )
@@ -227,9 +212,7 @@ class ImageGeneratorApp:
             ft.Divider(height=1),
             self.character_row,
             ft.Container(height=6),
-            self.character_prompt,
-            ft.Container(height=4),
-            self.background_prompt,
+            self.prompt_input,
             ft.Container(height=6),
             ft.Row(
                 controls=[
@@ -593,18 +576,11 @@ class ImageGeneratorApp:
             return
         
         # 프롬프트 가져오기
-        char_prompt = self.character_prompt.value.strip() if self.character_prompt.value else ""
-        bg_prompt = self.background_prompt.value.strip() if self.background_prompt.value else ""
+        prompt = self.prompt_input.value.strip() if self.prompt_input.value else ""
         
-        if not char_prompt:
-            self._show_error("캐릭터 동작/표정을 입력하세요.")
+        if not prompt:
+            self._show_error("프롬프트를 입력하세요.")
             return
-        
-        # 프롬프트 합치기
-        if bg_prompt:
-            prompt = f"{char_prompt}. 배경: {bg_prompt}"
-        else:
-            prompt = char_prompt
         
         self.is_generating = True
         self.generate_btn.disabled = True
@@ -706,13 +682,15 @@ class ImageGeneratorApp:
                 
                 negative = self.builder.get_negative_prompt()
 
-                # 4. 배경 설정 처리
-                if bg_prompt:
-                    # 배경 설정이 있는 경우 - 명시적으로 배경 지시
-                    final_prompt = f"{final_prompt} BACKGROUND: {bg_prompt}."
-                    self._log(f"🖼️ 배경: {bg_prompt}")
+                # 4. 배경 설정 처리 (프롬프트에서 배경 키워드 감지)
+                bg_keywords = ["배경", "background", "뒷배경", "back", "장소", "place", "환경", "environment"]
+                has_bg = any(kw in prompt.lower() for kw in bg_keywords)
+                
+                if has_bg:
+                    # 배경 관련 키워드가 있으면 프롬프트 그대로 사용
+                    self._log("🖼️ 배경: 프롬프트에 포함됨")
                 else:
-                    # 배경 설정이 없는 경우 투명 배경 강제 (Gemini 특화)
+                    # 배경 키워드가 없으면 투명 배경 강제
                     final_prompt = f"{final_prompt} ISOLATED SUBJECT. White background, no shadows, no ground, no environment."
                     negative = f"{negative}, colored background, gradient background, complex background, environment, scenery, ground, floor, shadows, lighting effects"
                     self._log("🫥 배경: 흰색/단순 (후처리 투명)")
