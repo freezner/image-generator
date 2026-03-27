@@ -684,17 +684,28 @@ class ImageGeneratorApp:
                 
                 negative = self.builder.get_negative_prompt()
 
-                # 4. 배경 설정 처리 (프롬프트에서 배경 키워드 감지)
-                bg_keywords = ["배경", "background", "뒷배경", "back", "장소", "place", "환경", "environment"]
-                has_bg = any(kw in prompt.lower() for kw in bg_keywords)
+                # 4. 배경/장소 추출 및 처리
+                # 장소 패턴: "에서", "에서 " 앞의 명사구 추출
+                import re
+                location_match = re.search(r'(\S+\s*\S*)\s*에서', prompt)
+                location = location_match.group(1) if location_match else None
                 
-                if has_bg:
-                    # 배경 관련 키워드가 있으면 프롬프트 그대로 사용
-                    self._log("🖼️ 배경: 프롬프트에 포함됨")
+                # 배경 키워드 감지
+                bg_keywords = ["배경", "background", "뒷배경", "back", "장소", "place", "환경", "environment"]
+                has_bg_keyword = any(kw in prompt.lower() for kw in bg_keywords)
+                has_location = location is not None
+                
+                if has_location or has_bg_keyword:
+                    # 장소가 추출되면 명시적으로 배경 지시
+                    if location:
+                        final_prompt = f"{final_prompt} LOCATION: {location}."
+                        self._log(f"🖼️ 장소: {location}")
+                    else:
+                        self._log("🖼️ 배경: 프롬프트에 포함됨")
                 else:
-                    # 배경 키워드가 없으면 투명 배경 강제
-                    final_prompt = f"{final_prompt} ISOLATED SUBJECT. White background, no shadows, no ground, no environment."
-                    negative = f"{negative}, colored background, gradient background, complex background, environment, scenery, ground, floor, shadows, lighting effects"
+                    # 배경/장소가 없으면 투명 배경 강제
+                    final_prompt = f"{final_prompt} ISOLATED SUBJECT. Pure white background, no shadows, no ground, no environment, no context."
+                    negative = f"{negative}, colored background, gradient background, complex background, environment, scenery, ground, floor, shadows, lighting effects, context"
                     self._log("🫥 배경: 흰색/단순 (후처리 투명)")
                 
                 # 5. 크기 가중치가 없는 캐릭터도 명시적으로 1.0x 표시
