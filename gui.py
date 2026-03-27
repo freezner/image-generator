@@ -16,7 +16,7 @@ import flet as ft
 
 # 앱 기본 설정
 APP_NAME = "JB Bank AI Image Generator"
-APP_VERSION = "0.0.2"
+APP_VERSION = "0.0.3"
 CONFIG_FILE = "config.json"
 ENV_FILE = ".env"
 
@@ -145,7 +145,7 @@ class ImageGeneratorApp:
         # 프롬프트 입력 (통합)
         self.prompt_input = ft.TextField(
             label="프롬프트",
-            hint_text="예: JB가 선물 상자를 들고 웃고 있는 모습, 투명 배경",
+            hint_text="예: 제이비가 선물 상자를 들고 웃고 있는 모습, 투명 배경",
             multiline=True,
             min_lines=3,
             max_lines=5,
@@ -409,21 +409,25 @@ class ImageGeneratorApp:
             content=ft.Container(
                 content=ft.Column(
                     controls=[
-                        ft.Text("🔑 API 설정", weight=ft.FontWeight.BOLD),
+                        ft.Text("🔑 API 설정", weight=ft.FontWeight.BOLD, size=14),
                         api_key_field,
-                        ft.Container(height=15),
-                        ft.Text("🎨 브랜드 설정", weight=ft.FontWeight.BOLD),
+                        ft.Divider(height=1),
+                        ft.Container(height=5),
+                        ft.Text("🎨 브랜드 설정", weight=ft.FontWeight.BOLD, size=14),
                         brand_name_field,
-                        ft.Container(height=15),
-                        ft.Text("🖼️ 생성 옵션", weight=ft.FontWeight.BOLD),
-                        image_count_dropdown,
-                        enhance_checkbox,
+                        ft.Divider(height=1),
+                        ft.Container(height=5),
+                        ft.Text("🖼️ 생성 옵션", weight=ft.FontWeight.BOLD, size=14),
+                        ft.Row([
+                            image_count_dropdown,
+                            enhance_checkbox,
+                        ], spacing=20),
                     ],
                     tight=True,
-                    spacing=10,
+                    spacing=8,
                 ),
-                width=450,
-                padding=10,
+                width=470,
+                padding=15,
             ),
             actions=[
                 ft.TextButton("취소", on_click=close_dialog),
