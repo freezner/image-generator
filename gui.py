@@ -647,10 +647,13 @@ class ImageGeneratorApp:
                 final_prompt = self.builder.build_simple(enhanced, has_character_reference=has_char_ref)
                 negative = self.builder.get_negative_prompt()
 
-                # 배경 설정이 없는 경우 투명 배경 추가
+                # 배경 설정이 없는 경우 투명 배경 강제
                 if not bg_prompt:
-                    final_prompt = f"{final_prompt} Transparent background, PNG format with alpha channel."
-                    self._log("🫥 배경: 투명 (PNG)")
+                    # 투명 배경을 강하게 지시
+                    final_prompt = f"CRITICAL: Pure transparent background ONLY, alpha channel 0%, no colors, no gradients, no shadows, no ground plane, completely empty background. {final_prompt}"
+                    # 네거티브 프롬프트에도 강하게 추가
+                    negative = f"{negative}, any background, colored background, gradient, shadow, ground, floor, wall, environment, scenery, context"
+                    self._log("🫥 배경: 투명 (강제)")
 
                 # 캐릭터 크기 가중치 프롬프트에 추가 (강력한 지시문 사용)
                 if detected_chars and self.character_scales:
