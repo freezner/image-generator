@@ -65,27 +65,31 @@ class ImageGeneratorApp:
         
         header = ft.Row(
             controls=[
-                ft.Row([
-                    ft.Image(
-                        src=str(logo_path.absolute()) if logo_exists else None,
-                        width=40,
-                        height=40,
-                        fit="contain",
-                    ) if logo_exists else ft.Container(),
-                    ft.Container(width=12) if logo_exists else ft.Container(),
-                    ft.Column([
-                        ft.Text(
-                            "JB Bank AI Image Generator",
-                            size=20,
-                            weight=ft.FontWeight.BOLD,
-                        ),
-                        ft.Text(
-                            f"v{APP_VERSION}",
-                            size=11,
-                            color=ft.Colors.GREY_500,
-                        ),
-                    ], spacing=0, alignment=ft.CrossAxisAlignment.START),
-                ], spacing=0),
+                ft.Row(
+                    controls=[
+                        ft.Image(
+                            src=str(logo_path.absolute()) if logo_exists else None,
+                            width=40,
+                            height=40,
+                            fit="contain",
+                        ) if logo_exists else ft.Container(),
+                        ft.Container(width=12) if logo_exists else ft.Container(),
+                        ft.Column([
+                            ft.Text(
+                                "AI Image Generator",
+                                size=20,
+                                weight=ft.FontWeight.BOLD,
+                            ),
+                            ft.Text(
+                                f"v{APP_VERSION}",
+                                size=11,
+                                color=ft.Colors.GREY_500,
+                            ),
+                        ], spacing=0, alignment=ft.CrossAxisAlignment.START),
+                    ],
+                    spacing=0,
+                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                ),
                 ft.Container(expand=True),
                 ft.IconButton(
                     icon=ft.Icons.SETTINGS,
