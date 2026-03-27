@@ -135,6 +135,13 @@ class ImageGeneratorApp:
                         self.open_assets_btn,
                         self.refresh_btn,
                     ],
+                    spacing=4,
+                ),
+                self.character_chips,
+            ],
+            spacing=4,
+        )
+
         # 프롬프트 입력 (통합)
         self.prompt_input = ft.TextField(
             label="프롬프트",
