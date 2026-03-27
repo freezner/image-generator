@@ -814,7 +814,7 @@ class ImageGeneratorApp:
             content=ft.Column([
                 ft.Row([
                     prev_btn,
-                    ft.Container(content=preview_image, alignment=ft.alignment.CENTER, width=320, height=320),
+                    ft.Container(content=preview_image, alignment=ft.Alignment(0, 0), width=320, height=320),
                     next_btn,
                 ], alignment=ft.MainAxisAlignment.CENTER),
                 ft.Container(height=8),
