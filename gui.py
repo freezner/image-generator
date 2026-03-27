@@ -642,36 +642,62 @@ class ImageGeneratorApp:
                 else:
                     enhanced = clean_prompt
                 
-                # 최종 프롬프트 생성 (캐릭터 참조 시 색상 보존)
+                # === 프롬프트 강화 ===
+                
+                # 1. 캐릭터별 속성 추출 (프롬프트에서 각 캐릭터의 특징 파싱)
+                char_attributes = {}
+                for char_name in detected_chars:
+                    # 캐릭터 이름 앞뒤의 단어들을 속성으로 추정
+                    import re
+                    pattern = rf"(\w+)\s*{re.escape(char_name)}|\s*{re.escape(char_name)}\s*(\w+)"
+                    matches = re.findall(pattern, clean_prompt, re.IGNORECASE)
+                    attrs = []
+                    for m in matches:
+                        for word in m:
+                            if word and len(word) > 1:
+                                attrs.append(word)
+                    if attrs:
+                        char_attributes[char_name] = attrs
+                
+                # 2. 각 캐릭터별 고유 속성 프롬프트 생성
+                char_specific_prompts = []
+                for char_name in detected_chars:
+                    attrs = char_attributes.get(char_name, [])
+                    attr_text = ", ".join(attrs) if attrs else "default appearance"
+                    
+                    # 크기 가중치 적용
+                    scale = self.character_scales.get(char_name, 1.0)
+                    scale_text = ""
+                    if scale != 1.0:
+                        if scale < 1.0:
+                            scale_text = f" [SIZE: {scale:.1f}x smaller]"
+                        else:
+                            scale_text = f" [SIZE: {scale:.1f}x larger]"
+                    
+                    char_specific_prompts.append(f"{char_name}: {attr_text}{scale_text}")
+                
+                # 3. 최종 프롬프트 조립
                 has_char_ref = bool(character_images)
-                final_prompt = self.builder.build_simple(enhanced, has_character_reference=has_char_ref)
+                base_prompt = self.builder.build_simple(enhanced, has_character_reference=has_char_ref)
+                
+                # 캐릭터별 속성을 명확히 분리
+                char_rules = " | ".join(char_specific_prompts)
+                final_prompt = f"CHARACTER RULES: {char_rules}. {base_prompt}"
+                
                 negative = self.builder.get_negative_prompt()
 
-                # 배경 설정이 없는 경우 투명 배경 강제
+                # 4. 배경 설정이 없는 경우 투명 배경 강제 (Gemini 특화)
                 if not bg_prompt:
-                    # 투명 배경을 강하게 지시
-                    final_prompt = f"CRITICAL: Pure transparent background ONLY, alpha channel 0%, no colors, no gradients, no shadows, no ground plane, completely empty background. {final_prompt}"
-                    # 네거티브 프롬프트에도 강하게 추가
-                    negative = f"{negative}, any background, colored background, gradient, shadow, ground, floor, wall, environment, scenery, context"
-                    self._log("🫥 배경: 투명 (강제)")
-
-                # 캐릭터 크기 가중치 프롬프트에 추가 (강력한 지시문 사용)
-                if detected_chars and self.character_scales:
-                    scale_parts = []
-                    for char_name in detected_chars:
-                        if char_name in self.character_scales:
-                            scale = self.character_scales[char_name]
-                            if scale != 1.0:
-                                # 더 명확하고 강제적인 프롬프트
-                                if scale < 1.0:
-                                    scale_parts.append(f"{char_name} must appear {scale:.1f}x smaller than normal size")
-                                else:
-                                    scale_parts.append(f"{char_name} must appear {scale:.1f}x larger than normal size")
-                    if scale_parts:
-                        scale_text = "; ".join(scale_parts)
-                        # 프롬프트 앞부분에 강하게 배치
-                        final_prompt = f"CRITICAL SIZE RULE: {scale_text}. Maintain exact proportions. {final_prompt}"
-                        self._log(f"📏 크기 설정: {scale_text}")
+                    # Gemini 이미지 모델용 투명 배경 지시
+                    final_prompt = f"{final_prompt} ISOLATED SUBJECT. White background, no shadows, no ground, no environment."
+                    # 흰 배경을 만들고 후처리에서 투명화하는 방식 유도
+                    negative = f"{negative}, colored background, gradient background, complex background, environment, scenery, ground, floor, shadows, lighting effects"
+                    self._log("🫥 배경: 흰색/단순 (후처리 투명)")
+                
+                # 5. 크기 가중치가 없는 캐릭터도 명시적으로 1.0x 표시
+                for char_name in detected_chars:
+                    if char_name not in self.character_scales:
+                        self._log(f"   • {char_name}: 기본 크기 (1.0x)")
                 
                 # 최종 프롬프트 로그 출력
                 self._log(f"\n📝 최종 프롬프트:\n{final_prompt[:200]}...")
