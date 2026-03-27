@@ -1006,17 +1006,17 @@ class ImageGeneratorApp:
                     width=320,
                     height=320,
                 ),
-                # 파일명과 페이지 인디케이터
+                # 파일명
                 filename_text,
-                ft.Container(height=4),
-                page_indicator,
                 ft.Container(height=8),
-                # 네비게이션 버튼 (이미지 아래)
+                # 네비게이션 버튼 + 페이지 인디케이터 (한 줄)
                 ft.Row([
                     prev_btn,
-                    ft.Container(width=20),
+                    ft.Container(width=12),
+                    page_indicator,
+                    ft.Container(width=12),
                     next_btn,
-                ], alignment=ft.MainAxisAlignment.CENTER),
+                ], alignment=ft.MainAxisAlignment.CENTER, vertical_alignment=ft.CrossAxisAlignment.CENTER),
                 ft.Divider(height=1),
                 ft.Container(height=8),
                 ft.Text("🔄 2차 가공", size=12, weight=ft.FontWeight.BOLD),
