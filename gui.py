@@ -686,11 +686,14 @@ class ImageGeneratorApp:
                 
                 negative = self.builder.get_negative_prompt()
 
-                # 4. 배경 설정이 없는 경우 투명 배경 강제 (Gemini 특화)
-                if not bg_prompt:
-                    # Gemini 이미지 모델용 투명 배경 지시
+                # 4. 배경 설정 처리
+                if bg_prompt:
+                    # 배경 설정이 있는 경우 - 명시적으로 배경 지시
+                    final_prompt = f"{final_prompt} BACKGROUND: {bg_prompt}."
+                    self._log(f"🖼️ 배경: {bg_prompt}")
+                else:
+                    # 배경 설정이 없는 경우 투명 배경 강제 (Gemini 특화)
                     final_prompt = f"{final_prompt} ISOLATED SUBJECT. White background, no shadows, no ground, no environment."
-                    # 흰 배경을 만들고 후처리에서 투명화하는 방식 유도
                     negative = f"{negative}, colored background, gradient background, complex background, environment, scenery, ground, floor, shadows, lighting effects"
                     self._log("🫥 배경: 흰색/단순 (후처리 투명)")
                 
