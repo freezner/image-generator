@@ -45,17 +45,11 @@ class ImageGeneratorApp:
         # UI 컴포넌트
         self._create_ui()
         
+        # 페이지 로드 완료 시 캐릭터 로드
+        self.page.on_load = self._on_page_load
+        
         # 컴포넌트 초기화
         self._initialize_components()
-        
-        # 3초 후에도 로딩 중이면 자동 갱신
-        def auto_refresh():
-            import time
-            time.sleep(3)
-            if "로딩 중" in self.character_text.value:
-                self._refresh_characters(None)
-        
-        threading.Thread(target=auto_refresh, daemon=True).start()
     
     def _create_ui(self):
         """UI 생성"""
@@ -307,6 +301,14 @@ class ImageGeneratorApp:
         
         threading.Thread(target=init_thread, daemon=True).start()
     
+    def _on_page_load(self, e):
+        """페이지 로드 완료 시 캐릭터 로드"""
+        self._log("📂 페이지 로드 완료, 캐릭터 확인 중...")
+        # 잠시 대기 후 캐릭터 로드 (UI가 완전히 렌더링된 후)
+        import time
+        time.sleep(0.5)
+        self._refresh_characters(None)
+    
     def _open_settings(self, e):
         """설정 다이얼로그 열기"""
         # 현재 설정 로드
@@ -405,7 +407,7 @@ class ImageGeneratorApp:
         
         dialog = ft.AlertDialog(
             modal=True,
-            title=ft.Text(f"⚙️ 설정  (v{APP_VERSION})"),
+            title=ft.Text(f"⚙️ 설정"),
             content=ft.Container(
                 content=ft.Column(
                     controls=[
