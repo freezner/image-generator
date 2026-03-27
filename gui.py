@@ -69,23 +69,16 @@ class ImageGeneratorApp:
                     controls=[
                         ft.Image(
                             src=str(logo_path.absolute()) if logo_exists else None,
-                            width=40,
-                            height=40,
+                            width=100,
+                            height=20,
                             fit="contain",
                         ) if logo_exists else ft.Container(),
                         ft.Container(width=12) if logo_exists else ft.Container(),
-                        ft.Column([
-                            ft.Text(
-                                "AI Image Generator",
-                                size=20,
-                                weight=ft.FontWeight.BOLD,
-                            ),
-                            ft.Text(
-                                f"v{APP_VERSION}",
-                                size=11,
-                                color=ft.Colors.GREY_500,
-                            ),
-                        ], spacing=0, alignment=ft.CrossAxisAlignment.START),
+                        ft.Text(
+                            "AI Image Generator",
+                            size=20,
+                            weight=ft.FontWeight.BOLD,
+                        ),
                     ],
                     spacing=0,
                     vertical_alignment=ft.CrossAxisAlignment.CENTER,
@@ -429,6 +422,12 @@ class ImageGeneratorApp:
             content=ft.Container(
                 content=ft.Column(
                     controls=[
+                        ft.Row([
+                            ft.Text("버전", size=12, color=ft.Colors.GREY_600),
+                            ft.Text(f"v{APP_VERSION}", size=12, weight=ft.FontWeight.BOLD),
+                        ], spacing=8),
+                        ft.Divider(height=1),
+                        ft.Container(height=10),
                         ft.Text("🔑 API 설정", weight=ft.FontWeight.BOLD),
                         api_key_field,
                         ft.Container(height=15),
