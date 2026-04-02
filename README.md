@@ -337,6 +337,27 @@ from reference,                    expression
   - ✅ `JB가 "안녕하세요" 말풍선을 들고 있는 모습`
   - ✅ `배경에 "SALE" 텍스트 추가`
 
+### 최종 프롬프트 예시
+
+**입력:** `JB가 계산기를 들고 설명하는 포즈`
+
+```
+3D rendering, cute, consistent character design from reference, 
+holding a calculator, pointing at the screen, explaining pose, friendly smile, 
+soft studio lighting, minimal clean background, high quality, detailed
+```
+
+> 캐릭터 참조 이미지가 있을 경우 브랜드 색상 지시 대신 `consistent character design from reference` 가 삽입되어 참조 이미지의 캐릭터 색상을 보존합니다.
+
+**입력:** `커피잔을 들고 있는 모습` (캐릭터 없음)
+
+```
+3D rendered cute character illustration, consistent character design, 
+#FF6B35 as primary accent color, #004E89 as secondary color,
+holding a coffee cup with both hands, warm smile, casual pose,
+soft studio lighting, minimal clean background, high quality, detailed, professional product image style
+```
+
 ---
 
 ## 🛡️ 오류 안내
