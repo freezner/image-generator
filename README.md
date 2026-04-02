@@ -232,6 +232,99 @@ bash scripts/create-dmg.sh
 
 ---
 
+## 🔄 내부 동작 플로우
+
+사용자가 프롬프트를 입력하면 아래 순서로 처리됩니다:
+
+```
+사용자 입력 (한국어 키워드)
+        │
+        ▼
+┌───────────────────────────────┐
+│  1. 캐릭터 감지               │
+│  프롬프트에서 캐릭터 이름 탐지 │
+│  예) "JB가 점프하는 포즈"     │
+└───────────────┬───────────────┘
+                │ 캐릭터 감지 시
+                ▼
+┌───────────────────────────────┐
+│  2. 참조 이미지 로드          │
+│  assets/character/ 에서       │
+│  캐릭터명 매칭 이미지 수집    │
+│  (최대 5장, 크기 가중치 적용) │
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│  3. 프롬프트 향상             │
+│  PromptEnhancer               │
+│  (Gemini 2.0 Flash)           │
+│                               │
+│  한국어 키워드                │
+│  → 정교한 영어 프롬프트 변환  │
+│                               │
+│  예) "선물 상자를 든 모습"    │
+│  → "holding a gift box with   │
+│     both hands, cheerful      │
+│     expression"               │
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│  4. 프롬프트 빌드             │
+│  PromptBuilder                │
+│                               │
+│  캐릭터 참조 있음:            │
+│  스타일 키워드 + 향상 프롬프트│
+│                               │
+│  캐릭터 참조 없음:            │
+│  고정 prefix                  │
+│  + 향상 프롬프트              │
+│  + 브랜드 색상 자동 삽입      │
+│  + 고정 suffix                │
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│  5. 이미지 생성 API 호출      │
+│  ImageGenerator               │
+│  (Google GenAI SDK)           │
+│                               │
+│  · 최종 프롬프트              │
+│  · 참조 이미지 (있을 경우)    │
+│  · 네거티브 프롬프트          │
+│  → Gemini / Imagen API 호출   │
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│  6. 결과 저장                 │
+│  output/ 디렉토리에 PNG 저장  │
+│  파일명: YYYYMMDD_HHMMSS_설명 │
+└───────────────────────────────┘
+```
+
+### 프롬프트 구조 (캐릭터 없는 경우)
+
+```
+[고정 prefix]          [향상된 프롬프트]        [고정 suffix]
+3D rendered cute    +  holding a calculator,  +  soft studio lighting,
+character,             pointing at screen         minimal background...
+{MAIN_COLOR} accent,
+{SUB_COLOR} secondary,
+```
+
+### 프롬프트 구조 (캐릭터 참조 있는 경우)
+
+```
+[스타일 키워드]                    [향상된 프롬프트]          [suffix]
+3D rendering, cute,             +  jumping with arms     +  soft lighting,
+consistent character design        raised, excited            high quality
+from reference,                    expression
+```
+
+---
+
 ## 🔧 프롬프트 규칙
 
 ### 캐릭터 자동 감지
