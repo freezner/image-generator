@@ -53,6 +53,20 @@ image-generator/
 
 ---
 
+## 🛠️ 기술 스택
+
+| 카테고리 | 항목 |
+|---|---|
+| **언어** | Python 3.11+ |
+| **GUI 프레임워크** | [Flet](https://flet.dev) 0.25+ (Flutter 기반 크로스플랫폼) |
+| **이미지 처리** | [Pillow](https://python-pillow.org) 10.0+ |
+| **LLM — 이미지 생성** | Gemini 2.5 Flash Image / Imagen 4.0 (Google GenAI) |
+| **LLM — 프롬프트 향상** | Gemini 2.0 Flash (한국어 → 영어 프롬프트 변환) |
+| **API SDK** | [google-genai](https://github.com/googleapis/python-genai) 1.0+ |
+| **패키징** | PyInstaller / Flet build |
+
+---
+
 ## 🚀 시작하기
 
 ### 1. 의존성 설치
